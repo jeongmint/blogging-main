@@ -960,7 +960,7 @@ _PAGE = r"""<!doctype html><html lang=ko><head><meta charset=utf-8>
     <h2 class=title>설정</h2>
     <p class=desc>글쓰기 규칙과 임시저장 동작을 관리합니다.</p>
     <div class=card><h3>글쓰기 규칙 <span class=muted style="font-weight:400">— 초안 생성 때 켠 것만 반영돼요</span></h3><div id=rules></div></div>
-    <div class=card style="margin-top:16px"><h3>임시저장</h3><div id=draftset></div><div id=cleanimp></div><div id=aimark></div><div id=savedebug></div></div>
+    <div class=card style="margin-top:16px"><h3>임시저장</h3><div id=autosaveset></div><div id=draftset></div><div id=cleanimp></div><div id=aimark></div><div id=savedebug></div></div>
     <div class=card style="margin-top:16px"><h3>키워드 경쟁 확인 <span class=muted style="font-weight:400">— 발행 전에 이 키워드로 노출 가능성이 있는지 가늠해요</span></h3>
       <div class=kwchk>
         <input id=kwq placeholder="예: 회현역 카페 주차" autocomplete=off>
@@ -1196,6 +1196,7 @@ const RULES={mobile_friendly:true,authenticity:true,structure_guide:true,seo:tru
 let PRUNE=true;  // 임시저장 시 같은 제목 이전 글 자동 정리(설정 토글)
 let IMPORTED_DRAFT=null;  // 사진을 가져온 원본 임시저장 글 {title,date} — 저장 완료 후 삭제 대상
 let SAVEDBG=false;  // 디버그: 임시저장 시 브라우저를 화면에 띄워 작업 과정을 직접 본다(headful)
+let AUTOSAVE=false;  // 초안 생성이 끝나면 검토 없이 곧장 임시저장(설정 토글) — 예약발행 모드에선 적용 안 함
 let CLEANIMP=true;  // 불러오기(in-place): 원본 글의 기존 스티커·지도 등 장식 삭제 후 작성(설정 토글)
 let MARKAI=true;  // AI 생성 이미지(FLUX 썸네일 등)에 네이버 'AI 활용' 표시(설정 토글, 기본 켬)
 const RULE_META=[
@@ -2339,7 +2340,13 @@ $('#gen').onclick=async()=>{
     const r=await fetch('/api/generate',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:GENABORT.signal});
     const d=await r.json();
     if(!r.ok){genDone(false); $('#preview').innerHTML='<div class=genload><div style="font-size:40px">😢</div><div class=genmsg>생성 실패</div><div class=gensub>'+(d.error||'')+'</div></div>'; st('실패'); errNotice('초안 생성 실패', d.error); return;}
-    genDone(true); PLAN=d; setTimeout(()=>renderPreview(d),350); st('생성 완료. 검토 후 임시저장하세요.'); toast('초안 생성 완료! 오른쪽 미리보기를 확인하세요.','ok'); $('#save').disabled=false; renderTabs();
+    genDone(true); PLAN=d; setTimeout(()=>renderPreview(d),350); $('#save').disabled=false; renderTabs();
+    if(AUTOSAVE && $('#pubmode').value!=='reserve'){
+      st('생성 완료. 자동 임시저장을 시작해요.'); toast('초안 생성 완료! 자동으로 임시저장을 시작할게요.','ok');
+      maybeAutoSave();
+    }else{
+      st('생성 완료. 검토 후 임시저장하세요.'); toast('초안 생성 완료! 오른쪽 미리보기를 확인하세요.','ok');
+    }
     if(d.debug)showLog(d.debug);
   }catch(e){genDone(false);
     if(e.name==='AbortError'){$('#preview').innerHTML='<div class=genload><div style="font-size:40px">✋</div><div class=genmsg>생성을 취소했어요</div><div class=gensub>다시 [초안 생성]을 누르면 새로 시작해요</div></div>'; st('취소했어요'); toast('초안 생성을 취소했어요','ok');}
@@ -2651,6 +2658,14 @@ function fireSave(title, category){
       tags:(PLAN&&PLAN.tags||[]).slice()}};  // 미리보기에서 고친 발행 태그(클릭 시점 값 고정)
   runSave(r, null);
 }
+// 자동 임시저장(설정 토글) — 사람이 [임시저장]을 누른 것과 동일하게 처리하되,
+// 확인 팝업("새 글 작성?")은 띄우지 않고 바로 백그라운드 저장 대기열로 보낸다.
+function maybeAutoSave(){
+  if(!PLAN)return;
+  const title=PLAN.title||'제목 없음';
+  fireSave(title, CATEGORY);
+  $('#save').disabled=true;
+}
 $('#save').onclick=()=>{
   if(!PLAN)return;
   ensureNotify();  // 유저 클릭(제스처) 시점에 알림 권한 요청 — 자리 비워도 결과 알림 받게
@@ -2789,7 +2804,7 @@ $('#stickerall').onclick=function(){FMT.stickerAll=!FMT.stickerAll;
 // 고른 적 없는 사용자만 내 문체 자동 선택 대상이 된다.
 let PREFS_LOADED=false, PERSONA_PICKED=false;
 async function savePrefs(){try{await fetch('/api/prefs',{method:'POST',headers:{'content-type':'application/json'},
-  body:JSON.stringify({rules:RULES,fmt:FMT,tone:$('#tone').value,personaId:PERSONA_PICKED?(PERSONA_ID||'default'):PERSONA_ID,minChars:$('#minchars').value,category:CATEGORY,pruneDrafts:PRUNE,saveDebug:SAVEDBG,cleanImported:CLEANIMP,markAiImages:MARKAI})});}catch(e){}}
+  body:JSON.stringify({rules:RULES,fmt:FMT,tone:$('#tone').value,personaId:PERSONA_PICKED?(PERSONA_ID||'default'):PERSONA_ID,minChars:$('#minchars').value,category:CATEGORY,pruneDrafts:PRUNE,saveDebug:SAVEDBG,cleanImported:CLEANIMP,markAiImages:MARKAI,autoSave:AUTOSAVE})});}catch(e){}}
 // 내 문체가 있는데 아직 아무 문체도 고른 적 없으면 첫 번째 내 문체를 기본 선택
 function autoPickPersona(){
   if(!PREFS_LOADED||PERSONA_PICKED||PERSONA_ID||!PERSONAS.length)return;
@@ -2813,10 +2828,11 @@ async function loadPrefs(){
     if(typeof p.saveDebug==='boolean')SAVEDBG=p.saveDebug;
     if(typeof p.cleanImported==='boolean')CLEANIMP=p.cleanImported;
     if(typeof p.markAiImages==='boolean')MARKAI=p.markAiImages;
+    if(typeof p.autoSave==='boolean')AUTOSAVE=p.autoSave;
     asked=!!p.pruneDraftsAsked;
   }catch(e){}
   PREFS_LOADED=true; autoPickPersona();  // 문체 목록이 먼저 로드돼 있으면 여기서 자동 선택
-  renderRules(); renderDraftSet(); renderCleanImp(); renderAiMark(); renderSaveDebug(); applyFmtState();
+  renderRules(); renderDraftSet(); renderCleanImp(); renderAiMark(); renderSaveDebug(); renderAutoSave(); applyFmtState();
   if(!asked)askPrune();  // 최초 1회만: 자동 정리 켤지 물어봄
 }
 // 저장된 협찬/스티커 상태를 토글 UI에 반영(서식 칩은 제거됨)
@@ -2841,6 +2857,16 @@ function renderDraftSet(){const c=$('#draftset'); if(!c)return; c.innerHTML='';
     <div class=d>새 글을 임시저장하면 <b>같은 제목</b>의 이전 임시저장 글을 삭제해 최신 1건만 남겨요. (네이버 임시저장 삭제는 복구 불가)</div></div>
     <div class="sw ${PRUNE?'on':''}"></div>`;
   row.querySelector('.sw').onclick=function(){PRUNE=!PRUNE; this.classList.toggle('on',PRUNE); savePrefs();};
+  c.appendChild(row);
+}
+// 초안 생성 완료 시 검토 없이 자동 임시저장(설정 토글)
+function renderAutoSave(){const c=$('#autosaveset'); if(!c)return; c.innerHTML='';
+  const row=document.createElement('div'); row.className='setrow';
+  row.innerHTML=`<div><div class=t>초안 완성되면 자동 임시저장</div>
+    <div class=d><b>[초안 생성]</b>이 끝나자마자 검토 없이 바로 네이버에 임시저장해요. 예약발행 모드에선 시각 확인이 필요해 적용되지 않고, 평소처럼 [임시저장] 버튼을 눌러야 해요.</div></div>
+    <div class="sw ${AUTOSAVE?'on':''}"></div>`;
+  row.querySelector('.sw').onclick=function(){AUTOSAVE=!AUTOSAVE; this.classList.toggle('on',AUTOSAVE); savePrefs();
+    toast(AUTOSAVE?'앞으로 초안이 완성되면 자동으로 임시저장할게요.':'자동 임시저장을 끌게요. 다시 검토 후 눌러 저장하세요.','info');};
   c.appendChild(row);
 }
 // 불러오기(in-place): 기존 글의 제목·본문·장식을 비우고 새로 작성(설정)
@@ -4479,6 +4505,8 @@ _PREFS_DEFAULT = {
     "cleanImported": True,
     # AI 생성 이미지(FLUX 썸네일·외부 AI 대체)에 네이버 'AI 활용' 표시를 켬(자율 표기, 기본 켬).
     "markAiImages": True,
+    # 초안 생성이 끝나면 검토 없이 곧장 임시저장(기본 끔 — 켜면 원격/무인 사용 시 편함).
+    "autoSave": False,
 }
 
 
@@ -4588,6 +4616,8 @@ def _save_prefs(body: dict) -> None:
         cur["cleanImported"] = bool(body.get("cleanImported"))
     if "markAiImages" in body:
         cur["markAiImages"] = bool(body.get("markAiImages"))
+    if "autoSave" in body:
+        cur["autoSave"] = bool(body.get("autoSave"))
     PREFS_PATH.write_text(json.dumps(cur, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
