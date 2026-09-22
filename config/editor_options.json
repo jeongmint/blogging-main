@@ -1,0 +1,742 @@
+{
+  "text_colors": [
+    {
+      "hex": "#c2410c",
+      "label": "#c2410c",
+      "no_color": false
+    },
+    {
+      "hex": "#eb3578",
+      "label": "#eb3578",
+      "no_color": false
+    },
+    {
+      "hex": "#000000",
+      "label": "색상 없음",
+      "no_color": true
+    },
+    {
+      "hex": "#999999",
+      "label": "#999999",
+      "no_color": false
+    },
+    {
+      "hex": "#ffcdc0",
+      "label": "#ffcdc0",
+      "no_color": false
+    },
+    {
+      "hex": "#ffe3c8",
+      "label": "#ffe3c8",
+      "no_color": false
+    },
+    {
+      "hex": "#fff8b2",
+      "label": "#fff8b2",
+      "no_color": false
+    },
+    {
+      "hex": "#e3fdc8",
+      "label": "#e3fdc8",
+      "no_color": false
+    },
+    {
+      "hex": "#c2f4db",
+      "label": "#c2f4db",
+      "no_color": false
+    },
+    {
+      "hex": "#bdfbfa",
+      "label": "#bdfbfa",
+      "no_color": false
+    },
+    {
+      "hex": "#b0f1ff",
+      "label": "#b0f1ff",
+      "no_color": false
+    },
+    {
+      "hex": "#9bdfff",
+      "label": "#9bdfff",
+      "no_color": false
+    },
+    {
+      "hex": "#fdd5f5",
+      "label": "#fdd5f5",
+      "no_color": false
+    },
+    {
+      "hex": "#ffb7de",
+      "label": "#ffb7de",
+      "no_color": false
+    },
+    {
+      "hex": "#ffffff",
+      "label": "#ffffff",
+      "no_color": false
+    },
+    {
+      "hex": "#777777",
+      "label": "#777777",
+      "no_color": false
+    },
+    {
+      "hex": "#ffad98",
+      "label": "#ffad98",
+      "no_color": false
+    },
+    {
+      "hex": "#ffd1a4",
+      "label": "#ffd1a4",
+      "no_color": false
+    },
+    {
+      "hex": "#fff593",
+      "label": "#fff593",
+      "no_color": false
+    },
+    {
+      "hex": "#badf98",
+      "label": "#badf98",
+      "no_color": false
+    },
+    {
+      "hex": "#3fcc9c",
+      "label": "#3fcc9c",
+      "no_color": false
+    },
+    {
+      "hex": "#15d0ca",
+      "label": "#15d0ca",
+      "no_color": false
+    },
+    {
+      "hex": "#28e1ff",
+      "label": "#28e1ff",
+      "no_color": false
+    },
+    {
+      "hex": "#5bc7ff",
+      "label": "#5bc7ff",
+      "no_color": false
+    },
+    {
+      "hex": "#cd8bc0",
+      "label": "#cd8bc0",
+      "no_color": false
+    },
+    {
+      "hex": "#ff97c1",
+      "label": "#ff97c1",
+      "no_color": false
+    },
+    {
+      "hex": "#f7f7f7",
+      "label": "#f7f7f7",
+      "no_color": false
+    },
+    {
+      "hex": "#555555",
+      "label": "#555555",
+      "no_color": false
+    },
+    {
+      "hex": "#ff5f45",
+      "label": "#ff5f45",
+      "no_color": false
+    },
+    {
+      "hex": "#ffa94f",
+      "label": "#ffa94f",
+      "no_color": false
+    },
+    {
+      "hex": "#ffef34",
+      "label": "#ffef34",
+      "no_color": false
+    },
+    {
+      "hex": "#98d36c",
+      "label": "#98d36c",
+      "no_color": false
+    },
+    {
+      "hex": "#00b976",
+      "label": "#00b976",
+      "no_color": false
+    },
+    {
+      "hex": "#00bfb5",
+      "label": "#00bfb5",
+      "no_color": false
+    },
+    {
+      "hex": "#00cdff",
+      "label": "#00cdff",
+      "no_color": false
+    },
+    {
+      "hex": "#0095e9",
+      "label": "#0095e9",
+      "no_color": false
+    },
+    {
+      "hex": "#bc61ab",
+      "label": "#bc61ab",
+      "no_color": false
+    },
+    {
+      "hex": "#ff65a8",
+      "label": "#ff65a8",
+      "no_color": false
+    },
+    {
+      "hex": "#e2e2e2",
+      "label": "#e2e2e2",
+      "no_color": false
+    },
+    {
+      "hex": "#333333",
+      "label": "#333333",
+      "no_color": false
+    },
+    {
+      "hex": "#ff0010",
+      "label": "#ff0010",
+      "no_color": false
+    },
+    {
+      "hex": "#ff9300",
+      "label": "#ff9300",
+      "no_color": false
+    },
+    {
+      "hex": "#ffd300",
+      "label": "#ffd300",
+      "no_color": false
+    },
+    {
+      "hex": "#54b800",
+      "label": "#54b800",
+      "no_color": false
+    },
+    {
+      "hex": "#00a84b",
+      "label": "#00a84b",
+      "no_color": false
+    },
+    {
+      "hex": "#009d91",
+      "label": "#009d91",
+      "no_color": false
+    },
+    {
+      "hex": "#00b3f2",
+      "label": "#00b3f2",
+      "no_color": false
+    },
+    {
+      "hex": "#0078cb",
+      "label": "#0078cb",
+      "no_color": false
+    },
+    {
+      "hex": "#aa1f91",
+      "label": "#aa1f91",
+      "no_color": false
+    },
+    {
+      "hex": "#ff008c",
+      "label": "#ff008c",
+      "no_color": false
+    },
+    {
+      "hex": "#c2c2c2",
+      "label": "#c2c2c2",
+      "no_color": false
+    },
+    {
+      "hex": "#141414",
+      "label": "#141414",
+      "no_color": false
+    },
+    {
+      "hex": "#ba0000",
+      "label": "#ba0000",
+      "no_color": false
+    },
+    {
+      "hex": "#b85c00",
+      "label": "#b85c00",
+      "no_color": false
+    },
+    {
+      "hex": "#ac9a00",
+      "label": "#ac9a00",
+      "no_color": false
+    },
+    {
+      "hex": "#36851e",
+      "label": "#36851e",
+      "no_color": false
+    },
+    {
+      "hex": "#007433",
+      "label": "#007433",
+      "no_color": false
+    },
+    {
+      "hex": "#00756a",
+      "label": "#00756a",
+      "no_color": false
+    },
+    {
+      "hex": "#007aa6",
+      "label": "#007aa6",
+      "no_color": false
+    },
+    {
+      "hex": "#004e82",
+      "label": "#004e82",
+      "no_color": false
+    },
+    {
+      "hex": "#740060",
+      "label": "#740060",
+      "no_color": false
+    },
+    {
+      "hex": "#bb005c",
+      "label": "#bb005c",
+      "no_color": false
+    },
+    {
+      "hex": "#9c9c9c",
+      "label": "#9c9c9c",
+      "no_color": false
+    },
+    {
+      "hex": "#000000",
+      "label": "#000000",
+      "no_color": false
+    },
+    {
+      "hex": "#700001",
+      "label": "#700001",
+      "no_color": false
+    },
+    {
+      "hex": "#823f00",
+      "label": "#823f00",
+      "no_color": false
+    },
+    {
+      "hex": "#6a5f00",
+      "label": "#6a5f00",
+      "no_color": false
+    },
+    {
+      "hex": "#245b12",
+      "label": "#245b12",
+      "no_color": false
+    },
+    {
+      "hex": "#004e22",
+      "label": "#004e22",
+      "no_color": false
+    },
+    {
+      "hex": "#00554c",
+      "label": "#00554c",
+      "no_color": false
+    },
+    {
+      "hex": "#004e6a",
+      "label": "#004e6a",
+      "no_color": false
+    },
+    {
+      "hex": "#003960",
+      "label": "#003960",
+      "no_color": false
+    },
+    {
+      "hex": "#4f0041",
+      "label": "#4f0041",
+      "no_color": false
+    },
+    {
+      "hex": "#830041",
+      "label": "#830041",
+      "no_color": false
+    }
+  ],
+  "bg_colors": [
+    {
+      "hex": "#ffedd5"
+    },
+    {
+      "hex": "#c2410c"
+    },
+    {
+      "hex": "#000000"
+    },
+    {
+      "hex": "#999999"
+    },
+    {
+      "hex": "#ffcdc0"
+    },
+    {
+      "hex": "#ffe3c8"
+    },
+    {
+      "hex": "#fff8b2"
+    },
+    {
+      "hex": "#e3fdc8"
+    },
+    {
+      "hex": "#c2f4db"
+    },
+    {
+      "hex": "#bdfbfa"
+    },
+    {
+      "hex": "#b0f1ff"
+    },
+    {
+      "hex": "#9bdfff"
+    },
+    {
+      "hex": "#fdd5f5"
+    },
+    {
+      "hex": "#ffb7de"
+    },
+    {
+      "hex": "#ffffff"
+    },
+    {
+      "hex": "#777777"
+    },
+    {
+      "hex": "#ffad98"
+    },
+    {
+      "hex": "#ffd1a4"
+    },
+    {
+      "hex": "#fff593"
+    },
+    {
+      "hex": "#badf98"
+    },
+    {
+      "hex": "#3fcc9c"
+    },
+    {
+      "hex": "#15d0ca"
+    },
+    {
+      "hex": "#28e1ff"
+    },
+    {
+      "hex": "#5bc7ff"
+    },
+    {
+      "hex": "#cd8bc0"
+    },
+    {
+      "hex": "#ff97c1"
+    },
+    {
+      "hex": "#f7f7f7"
+    },
+    {
+      "hex": "#555555"
+    },
+    {
+      "hex": "#ff5f45"
+    },
+    {
+      "hex": "#ffa94f"
+    },
+    {
+      "hex": "#ffef34"
+    },
+    {
+      "hex": "#98d36c"
+    },
+    {
+      "hex": "#00b976"
+    },
+    {
+      "hex": "#00bfb5"
+    },
+    {
+      "hex": "#00cdff"
+    },
+    {
+      "hex": "#0095e9"
+    },
+    {
+      "hex": "#bc61ab"
+    },
+    {
+      "hex": "#ff65a8"
+    },
+    {
+      "hex": "#e2e2e2"
+    },
+    {
+      "hex": "#333333"
+    },
+    {
+      "hex": "#ff0010"
+    },
+    {
+      "hex": "#ff9300"
+    },
+    {
+      "hex": "#ffd300"
+    },
+    {
+      "hex": "#54b800"
+    },
+    {
+      "hex": "#00a84b"
+    },
+    {
+      "hex": "#009d91"
+    },
+    {
+      "hex": "#00b3f2"
+    },
+    {
+      "hex": "#0078cb"
+    },
+    {
+      "hex": "#aa1f91"
+    },
+    {
+      "hex": "#ff008c"
+    },
+    {
+      "hex": "#c2c2c2"
+    },
+    {
+      "hex": "#141414"
+    },
+    {
+      "hex": "#ba0000"
+    },
+    {
+      "hex": "#b85c00"
+    },
+    {
+      "hex": "#ac9a00"
+    },
+    {
+      "hex": "#36851e"
+    },
+    {
+      "hex": "#007433"
+    },
+    {
+      "hex": "#00756a"
+    },
+    {
+      "hex": "#007aa6"
+    },
+    {
+      "hex": "#004e82"
+    },
+    {
+      "hex": "#740060"
+    },
+    {
+      "hex": "#bb005c"
+    },
+    {
+      "hex": "#9c9c9c"
+    },
+    {
+      "hex": "#000000"
+    },
+    {
+      "hex": "#700001"
+    },
+    {
+      "hex": "#823f00"
+    },
+    {
+      "hex": "#6a5f00"
+    },
+    {
+      "hex": "#245b12"
+    },
+    {
+      "hex": "#004e22"
+    },
+    {
+      "hex": "#00554c"
+    },
+    {
+      "hex": "#004e6a"
+    },
+    {
+      "hex": "#003960"
+    },
+    {
+      "hex": "#4f0041"
+    },
+    {
+      "hex": "#830041"
+    }
+  ],
+  "dividers": [
+    {
+      "i": 0,
+      "value": "default",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    },
+    {
+      "i": 1,
+      "value": "line1",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    },
+    {
+      "i": 2,
+      "value": "line2",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    },
+    {
+      "i": 3,
+      "value": "line3",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    },
+    {
+      "i": 4,
+      "value": "line4",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    },
+    {
+      "i": 5,
+      "value": "line5",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    },
+    {
+      "i": 6,
+      "value": "line6",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    },
+    {
+      "i": 7,
+      "value": "line7",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    }
+  ],
+  "quotes": [
+    {
+      "i": 0,
+      "value": "default",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    },
+    {
+      "i": 1,
+      "value": "quotation_line",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    },
+    {
+      "i": 2,
+      "value": "quotation_bubble",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    },
+    {
+      "i": 3,
+      "value": "quotation_underline",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    },
+    {
+      "i": 4,
+      "value": "quotation_postit",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    },
+    {
+      "i": 5,
+      "value": "quotation_corner",
+      "title": null,
+      "img": null,
+      "bg": "none"
+    }
+  ],
+  "fonts": [
+    {
+      "value": null,
+      "name": "마루부리\n서체 변경"
+    },
+    {
+      "value": "system",
+      "name": "기본서체\n기본서체"
+    },
+    {
+      "value": "nanumgothic",
+      "name": "나눔고딕\n나눔고딕"
+    },
+    {
+      "value": "nanummyeongjo",
+      "name": "나눔명조\n나눔명조"
+    },
+    {
+      "value": "nanumbarungothic",
+      "name": "나눔바른고딕\n나눔바른고딕"
+    },
+    {
+      "value": "nanumsquare",
+      "name": "나눔스퀘어\n나눔스퀘어"
+    },
+    {
+      "value": "nanummaruburi",
+      "name": "마루부리\n마루부리\n선택됨"
+    },
+    {
+      "value": "nanumdasisijaghae",
+      "name": "다시시작해\n다시시작해"
+    },
+    {
+      "value": "nanumbareunhipi",
+      "name": "바른히피\n바른히피"
+    },
+    {
+      "value": "nanumuriddalsongeulssi",
+      "name": "우리딸손글씨\n우리딸손글씨"
+    }
+  ]
+}

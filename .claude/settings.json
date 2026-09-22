@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.data.go.kr)",
+      "WebFetch(domain:various.foodsafetykorea.go.kr)",
+      "Bash(xargs ls -la)"
+    ]
+  }
+}

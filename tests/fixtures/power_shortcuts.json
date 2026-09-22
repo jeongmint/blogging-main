@@ -1,0 +1,421 @@
+{
+  "actions1": [
+    "textColor",
+    "fontFamily",
+    "fontSize"
+  ],
+  "actions10": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions11": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions12": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions13": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions14": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions15": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions16": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions17": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions18": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions19": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions2": [
+    "textColor",
+    "backgroundColor",
+    "fontFamily",
+    "fontSize"
+  ],
+  "actions20": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions21": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions22": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions23": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions24": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions3": [
+    "textColor",
+    "fontFamily",
+    "backgroundColor",
+    "fontSize"
+  ],
+  "actions4": [
+    "textColor",
+    "backgroundColor",
+    "fontFamily"
+  ],
+  "actions5": [
+    "textColor",
+    "fontFamily",
+    "fontSize"
+  ],
+  "actions6": [
+    "insertQuotation"
+  ],
+  "actions7": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions8": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "actions9": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "backgroundColor1": "#eb7d7d",
+  "backgroundColor10": "#FEF3C7",
+  "backgroundColor11": "#E0E7FF",
+  "backgroundColor12": "#CCFBF1",
+  "backgroundColor13": "#FCE7F3",
+  "backgroundColor14": "#FEF3C7",
+  "backgroundColor15": "#F3F4F6",
+  "backgroundColor16": "#FFE4E6",
+  "backgroundColor17": "#CCFBF1",
+  "backgroundColor18": "#FAE8FF",
+  "backgroundColor19": "#E0E7FF",
+  "backgroundColor2": "#f7f7f7",
+  "backgroundColor20": "#FFEDD5",
+  "backgroundColor21": "#D1FAE5",
+  "backgroundColor22": "#E0E7FF",
+  "backgroundColor23": "#CFFAFE",
+  "backgroundColor24": "#FEE2E2",
+  "backgroundColor3": "",
+  "backgroundColor4": "#FEF3C7",
+  "backgroundColor5": "#FFEDD5",
+  "backgroundColor6": "#F3E8FF",
+  "backgroundColor7": "#D1FAE5",
+  "backgroundColor8": "#DBEAFE",
+  "backgroundColor9": "#FEE2E2",
+  "documentDividerType1": "default",
+  "documentDividerType10": "default",
+  "documentDividerType11": "default",
+  "documentDividerType12": "default",
+  "documentDividerType13": "default",
+  "documentDividerType14": "default",
+  "documentDividerType15": "default",
+  "documentDividerType16": "default",
+  "documentDividerType17": "default",
+  "documentDividerType18": "default",
+  "documentDividerType19": "default",
+  "documentDividerType2": "default",
+  "documentDividerType20": "default",
+  "documentDividerType21": "default",
+  "documentDividerType22": "default",
+  "documentDividerType23": "default",
+  "documentDividerType24": "default",
+  "documentDividerType3": "default",
+  "documentDividerType4": "default",
+  "documentDividerType5": "default",
+  "documentDividerType6": "default",
+  "documentDividerType7": "default",
+  "documentDividerType8": "default",
+  "documentDividerType9": "default",
+  "documentQuotationType1": "default",
+  "documentQuotationType10": "default",
+  "documentQuotationType11": "default",
+  "documentQuotationType12": "default",
+  "documentQuotationType13": "default",
+  "documentQuotationType14": "default",
+  "documentQuotationType15": "default",
+  "documentQuotationType16": "default",
+  "documentQuotationType17": "default",
+  "documentQuotationType18": "default",
+  "documentQuotationType19": "default",
+  "documentQuotationType2": "default",
+  "documentQuotationType20": "default",
+  "documentQuotationType21": "default",
+  "documentQuotationType22": "default",
+  "documentQuotationType23": "default",
+  "documentQuotationType24": "default",
+  "documentQuotationType3": "quotation_underline",
+  "documentQuotationType4": "default",
+  "documentQuotationType5": "default",
+  "documentQuotationType6": "quotation_underline",
+  "documentQuotationType7": "default",
+  "documentQuotationType8": "default",
+  "documentQuotationType9": "default",
+  "editorMode1": "format",
+  "editorMode10": "format",
+  "editorMode11": "format",
+  "editorMode12": "format",
+  "editorMode13": "format",
+  "editorMode14": "format",
+  "editorMode15": "format",
+  "editorMode16": "format",
+  "editorMode17": "format",
+  "editorMode18": "format",
+  "editorMode19": "format",
+  "editorMode2": "format",
+  "editorMode20": "format",
+  "editorMode21": "format",
+  "editorMode22": "format",
+  "editorMode23": "format",
+  "editorMode24": "format",
+  "editorMode3": "format",
+  "editorMode4": "format",
+  "editorMode5": "format",
+  "editorMode6": "insert",
+  "editorMode7": "format",
+  "editorMode8": "format",
+  "editorMode9": "format",
+  "fontFamily1": "nanumuriddalsongeulssi",
+  "fontFamily2": "nanumsquare",
+  "fontFamily3": "nanumdasisijaghae",
+  "fontFamily4": "nanumdasisijaghae",
+  "fontFamily5": "nanumdasisijaghae",
+  "fontSize1": 16,
+  "fontSize2": 11,
+  "fontSize3": 15,
+  "fontSize5": 16,
+  "formatActions1": [
+    "textColor",
+    "fontFamily",
+    "fontSize"
+  ],
+  "formatActions10": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions11": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions12": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions13": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions14": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions15": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions16": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions17": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions18": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions19": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions2": [
+    "textColor",
+    "backgroundColor",
+    "fontFamily",
+    "fontSize"
+  ],
+  "formatActions20": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions21": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions22": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions23": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions24": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions3": [
+    "textColor",
+    "fontFamily",
+    "backgroundColor",
+    "fontSize"
+  ],
+  "formatActions4": [
+    "textColor",
+    "backgroundColor",
+    "fontFamily"
+  ],
+  "formatActions5": [
+    "textColor",
+    "fontFamily",
+    "fontSize"
+  ],
+  "formatActions6": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions7": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions8": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "formatActions9": [
+    "textColor",
+    "backgroundColor"
+  ],
+  "hasInitialized": true,
+  "insertActions1": [],
+  "insertActions10": [],
+  "insertActions11": [],
+  "insertActions12": [],
+  "insertActions13": [],
+  "insertActions14": [],
+  "insertActions15": [],
+  "insertActions16": [],
+  "insertActions17": [],
+  "insertActions18": [],
+  "insertActions19": [],
+  "insertActions2": [],
+  "insertActions20": [],
+  "insertActions21": [],
+  "insertActions22": [],
+  "insertActions23": [],
+  "insertActions24": [],
+  "insertActions3": [
+    "insertQuotation"
+  ],
+  "insertActions4": [],
+  "insertActions5": [],
+  "insertActions6": [
+    "insertQuotation"
+  ],
+  "insertActions7": [],
+  "insertActions8": [],
+  "insertActions9": [],
+  "showPreview": true,
+  "soundEnabled": true,
+  "supportersCacheData": [
+    {
+      "amount": 5000,
+      "name": "김혜연"
+    },
+    {
+      "amount": 10000,
+      "name": "최승룡"
+    },
+    {
+      "amount": 5000,
+      "name": "백선아"
+    },
+    {
+      "amount": 10000,
+      "name": "최하정"
+    }
+  ],
+  "textColor1": "#eb7d7d",
+  "textColor10": "#92400E",
+  "textColor11": "#3730A3",
+  "textColor12": "#065F5B",
+  "textColor13": "#831843",
+  "textColor14": "#713F12",
+  "textColor15": "#1F2937",
+  "textColor16": "#BE123C",
+  "textColor17": "#0F766E",
+  "textColor18": "#A21CAF",
+  "textColor19": "#4338CA",
+  "textColor2": "#777777",
+  "textColor20": "#C2410C",
+  "textColor21": "#047857",
+  "textColor22": "#6366F1",
+  "textColor23": "#0891B2",
+  "textColor24": "#DC2626",
+  "textColor3": "#eb3578",
+  "textColor4": "#eb7d7d",
+  "textColor5": "#4f8c9b",
+  "textColor6": "#581C87",
+  "textColor7": "#065F46",
+  "textColor8": "#1E40AF",
+  "textColor9": "#B91C1C",
+  "unlockedShortcuts": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24
+  ],
+  "userColors": [
+    "#FFB3BA",
+    "#FFDFBA",
+    "#FFFFBA",
+    "#BAFFC9",
+    "#BAE1FF",
+    "#E1BAFF",
+    "#eb7d7d",
+    "#FFF5BA",
+    "#C8F7C5",
+    "#BDE0FE",
+    "#eb3578",
+    "#4f8c9b"
+  ]
+}

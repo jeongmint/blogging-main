@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.uv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Env / secrets
+.env
+.env.local
+*.local.yaml
+
+# Playwright
+playwright-report/
+.cache/
+test-results/
+
+# Runtime data
+data/
+downloads/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Node / Electron (added later)
+node_modules/
+dist/
+out/
+
+# PyInstaller 빌드 산출물
+build/
+*.app
+
+# 유저별 스티커 카탈로그(개인 데이터, data/stickers 이미지 참조)
+config/stickers.yaml
+
+# 테스트용 개인 사진(카톡 등) — 커밋 금지
+test/
+
+# 유저 포맷 선택(구분선/인용구 종류)
+config/format.yaml
+
+# 유저 업로드 사진
+data/uploads/
+
+# 유저 블로그 카테고리 캐시
+config/categories.json
+
+# 유저 글쓰기 설정(규칙·서식칩·톤)
+config/ui_prefs.json
+config/style_pool.user.yaml

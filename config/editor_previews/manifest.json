@@ -1,0 +1,62 @@
+{
+  "dividers": [
+    {
+      "value": "default",
+      "img": true
+    },
+    {
+      "value": "line1",
+      "img": true
+    },
+    {
+      "value": "line2",
+      "img": true
+    },
+    {
+      "value": "line3",
+      "img": true
+    },
+    {
+      "value": "line4",
+      "img": true
+    },
+    {
+      "value": "line5",
+      "img": true
+    },
+    {
+      "value": "line6",
+      "img": true
+    },
+    {
+      "value": "line7",
+      "img": true
+    }
+  ],
+  "quotes": [
+    {
+      "value": "default",
+      "img": true
+    },
+    {
+      "value": "quotation_line",
+      "img": true
+    },
+    {
+      "value": "quotation_bubble",
+      "img": true
+    },
+    {
+      "value": "quotation_underline",
+      "img": true
+    },
+    {
+      "value": "quotation_postit",
+      "img": true
+    },
+    {
+      "value": "quotation_corner",
+      "img": true
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+presets:
+  gemini:
+    label: Gemini API — 3.5 Flash (무료 티어 OK)
+    provider: gemini
+    text: gemini-3.5-flash
+    vision: gemini-2.5-flash
+    note: 지시 정확. GEMINI_API_KEY 필요. 무료 티어 키 사용 가능(Pro 계열은 쿼터 0 — 결제 필요).
+    concurrent_load: true
+  gemini_36:
+    label: Gemini API — 3.6 Flash (무료·신형, 현재 가장 안정)
+    provider: gemini
+    text: gemini-3.6-flash
+    vision: gemini-2.5-flash
+    note: >-
+      3.5 Flash보다 신형이면서 실제로 되는 조합. 2026-09-04 실측에서 초안 크기 요청
+      4/4 성공(35~53초)이고, 같은 시간대 3.7·3.8은 0/4(503), 3.5도 1회 503이 났다.
+      thinking 지원 레벨은 minimal/low/medium/high(기본 medium).
+    concurrent_load: true
+  gemini_38:
+    label: Gemini API — 3.8 Flash (신형, 혼잡할 수 있음)
+    provider: gemini
+    text: gemini-3.8-flash
+    vision: gemini-2.5-flash
+    note: >-
+      3.5 Flash보다 신형. 단 2026-09-04 실측에서 초안 크기 요청이 503 UNAVAILABLE
+      ("high demand")로 연속 실패했다 — 출시 직후 혼잡. 짧은 호출은 통과한다.
+      혼잡이 풀린 뒤 쓰고, 실패하면 gemini(3.5 Flash) 프리셋으로 되돌릴 것.
+      thinking 지원 레벨은 low/medium/high(기본 medium) — minimal은 없다.
+    concurrent_load: true
+  claude:
+    label: Claude API (정확·유료)
+    provider: anthropic
+    text: claude-opus-4-8
+    vision: qwen/qwen3.5-122b-a10b
+    note: 지시 정확히 따름(마커 잘 나옴). ANTHROPIC_API_KEY 필요. 비전은 NVIDIA.
+    concurrent_load: true
+  claude_sonnet:
+    label: Claude API — Sonnet 5 (저렴)
+    provider: anthropic
+    text: claude-sonnet-5
+    vision: qwen/qwen3.5-122b-a10b
+    note: Opus보다 저렴, Opus급에 근접한 품질. ANTHROPIC_API_KEY 필요. 비전은 NVIDIA.
+    concurrent_load: true
+  gpt:
+    label: OpenAI API — GPT (정확·유료)
+    provider: openai
+    text: gpt-4o
+    vision: qwen/qwen3.5-122b-a10b
+    note: 지시 정확. OPENAI_API_KEY 필요. 비전은 NVIDIA.
+    concurrent_load: true
+  nvidia_nemotron:
+    label: NVIDIA API — Nemotron 3 Super (무료 크레딧)
+    provider: nvidia
+    text: nvidia/nemotron-3-super-120b-a12b
+    vision: qwen/qwen3.5-122b-a10b
+    note: build.nvidia.com 호스티드. 텍스트·비전 모두 NVIDIA_API_KEY 하나로.
+    concurrent_load: true
+  nvidia_gpt_oss:
+    label: NVIDIA API — GPT-OSS 120B (무료 크레딧)
+    provider: nvidia
+    text: openai/gpt-oss-120b
+    vision: qwen/qwen3.5-122b-a10b
+    note: build.nvidia.com 호스티드. 텍스트·비전 모두 NVIDIA_API_KEY 하나로.
+    concurrent_load: true
+  nvidia_llama:
+    label: NVIDIA API — Llama 3.3 70B (무료 크레딧)
+    provider: nvidia
+    text: meta/llama-3.3-70b-instruct
+    vision: qwen/qwen3.5-122b-a10b
+    note: build.nvidia.com 호스티드. 텍스트·비전 모두 NVIDIA_API_KEY 하나로.
+    concurrent_load: true
+default: gemini
+selection:
+  text: gemini-3.5-flash
+  vision: gemini-2.5-flash
+caption:
+  model: qwen/qwen3.5-122b-a10b
