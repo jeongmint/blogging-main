@@ -319,7 +319,6 @@ class BlogPublisher:
                     warnings.append(
                         "표 자동 삽입 실패 — 에디터에서 직접 ‘표’를 추가해 주세요."
                     )
-        self._verify_body_text(plan)
         # 본문 입력을 모두 마친 뒤 강조 서식 적용(커서 간섭 방지)
         for span in emphases:
             try:
@@ -334,6 +333,10 @@ class BlogPublisher:
             self._mark_ai_images(plan)
         # 대표사진 지정은 반드시 '맨 마지막' — 사진 조작이 더 남아 있으면 플래그가 또 옮겨간다.
         self._set_rep_photo(plan, warnings)
+        # 본문 검증은 반드시 여기(타이핑+강조+정렬복구+AI표시+대표지정을 모두 마친 뒤,
+        # save_draft 바로 전)에서 한다 — 더 일찍 하면 그 뒤 단계들이 저지르는 손상을
+        # 놓친다(실측: 초반 검증은 통과했는데 이후 단계를 거치며 599자→396자로 더 깎였다).
+        self._verify_body_text(plan)
         if reserve_at is not None:
             # 예약 발행 = 발행이므로 임시저장/정리 팝업(딤 레이어)을 만들지 않고 바로 예약 발행한다
             # — save_draft·prune의 목록 팝업이 발행 레이어 클릭을 가로채는 충돌을 피한다.
