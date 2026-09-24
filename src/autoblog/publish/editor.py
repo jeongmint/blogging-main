@@ -251,22 +251,26 @@ class BlogPublisher:
                 page.wait_for_timeout(300)
 
     def _click_content_component_safe(self) -> None:
-        """본문(제목 아래) 클릭 직전, '작성 중인 글이 있습니다' 이어쓰기 알림이 늦게(제목
-        타이핑 이후) 뜨며 클릭을 가로채는 경우가 있다(_load_draft_into_editor와 동일 현상).
-        이 알림은 se-popup-dim을 쓰지 않아 _dismiss_draft_popup의 딤 감지로는 안 잡힌다.
-        그래서 클릭 직전마다 이어쓰기 팝업만 콕 집어 닫으며 재시도한다."""
+        """본문(제목 아래) 클릭 — 팝업에 안전하게(_click_safe로 위임)."""
+        self._click_safe(SMART_EDITOR["content_component"])
+
+    def _click_safe(self, selector: str) -> None:
+        """'작성 중인 글이 있습니다' 이어쓰기 알림이 예고 없이(제목 타이핑 뒤는 물론, 제목
+        재시도 클릭 도중에도) 나타나 클릭을 가로채는 경우가 있다(_load_draft_into_editor와
+        동일 현상). 이 알림은 se-popup-dim을 쓰지 않아 _dismiss_draft_popup의 딤 감지로는
+        안 잡힌다. 그래서 어떤 요소를 클릭하든 직전마다 이 팝업만 콕 집어 닫으며 재시도한다."""
         from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
         for _ in range(5):
             self._dismiss_entry_popup()
             try:
-                self._page.click(SMART_EDITOR["content_component"], timeout=5000)
+                self._page.click(selector, timeout=5000)
                 return
             except PlaywrightTimeoutError:
                 self._page.wait_for_timeout(400)
         # 안전망: 그래도 안 닫히면 딤 기반 팝업 정리까지 시도한 뒤 강제 클릭.
         self._dismiss_draft_popup()
-        self._page.click(SMART_EDITOR["content_component"], force=True)
+        self._page.click(selector, force=True)
 
     def _dismiss_entry_popup(self) -> bool:
         """진입 '이어쓰기' 팝업(작성 중인 글이 있습니다)만 콕 집어 '취소'로 닫는다.
@@ -1690,7 +1694,7 @@ class BlogPublisher:
         결과를 검증하고 짧으면 지우고 다시 친다(최대 3회)."""
         page = self._page
         for attempt in range(3):
-            page.click(SMART_EDITOR["title_component"])
+            self._click_safe(SMART_EDITOR["title_component"])
             page.keyboard.press("ControlOrMeta+a")
             page.keyboard.press("Delete")
             page.wait_for_timeout(150)
@@ -2804,9 +2808,9 @@ class BlogPublisher:
         page.keyboard.press("Escape")  # 객체 선택 해제
         page.wait_for_timeout(150)
         try:
-            page.click(SMART_EDITOR["canvas_bottom_button"])
+            self._click_safe(SMART_EDITOR["canvas_bottom_button"])
         except Exception:
-            page.click(SMART_EDITOR["content_component"])  # 폴백: 본문 컴포넌트 클릭
+            self._click_safe(SMART_EDITOR["content_component"])  # 폴백: 본문 컴포넌트 클릭
         settled = False
         for _ in range(10):
             if page.evaluate(_CARET_IN_LAST_TEXT_JS):
