@@ -319,6 +319,7 @@ class BlogPublisher:
                     warnings.append(
                         "표 자동 삽입 실패 — 에디터에서 직접 ‘표’를 추가해 주세요."
                     )
+        self._verify_body_text(plan)
         # 본문 입력을 모두 마친 뒤 강조 서식 적용(커서 간섭 방지)
         for span in emphases:
             try:
@@ -413,6 +414,29 @@ class BlogPublisher:
                     "태그 자동 입력 실패 — 발행 창의 태그 칸에 직접 넣어 주세요: "
                     + " ".join("#" + t for t in clean)
                 )
+
+    def _verify_body_text(self, plan: PublishPlan) -> None:
+        """본문 타이핑 직후, 실제 본문 글자 수가 플랜과 크게 어긋나면 저장 전에 막는다.
+
+        _insert_table/_insert_link처럼 '문서 끝'이 아닌 곳으로 커서가 튀는 삽입 뒤에는,
+        그 지점부터 이어지는 타이핑이 본문이 아니라 허공으로 들어가 통째로 사라진다 —
+        Python 예외 없이 조용히 저장까지 '성공'해 버린다(실측: 폼폼푸린 글에서 본문 절반
+        유실). 저장 직전에 se-text 컴포넌트의 실제 글자 수를 합산해 플랜이 요구하는
+        분량과 크게 어긋나면 예외로 막는다 — 경고만 남기면 다음에도 똑같이 못 알아챈다."""
+        expected = sum(len(b.text) for b in plan.blocks if b.kind == "text" and b.text)
+        if expected < 50:
+            return  # 사진 위주라 본문 텍스트가 거의 없는 플랜은 검증 의미가 작음
+        texts = self._page.eval_on_selector_all(
+            ".se-component.se-text", "els => els.map(e => e.innerText || '')"
+        )
+        actual = sum(len(t) for t in texts)
+        if actual < expected * 0.6:
+            raise RuntimeError(
+                f"본문 유실 감지 — 플랜상 텍스트는 {expected}자인데 실제 에디터에는 "
+                f"{actual}자만 들어갔어요(커서가 엉뚱한 곳으로 튀어 일부가 허공에 타이핑된 "
+                "것으로 보여요). 잘못된 내용으로 저장되지 않도록 여기서 중단합니다 — "
+                "다시 시도해 주세요."
+            )
 
     def save_draft(self):
         """임시저장."""
@@ -1791,10 +1815,11 @@ class BlogPublisher:
         문단)에 그대로 붙여넣는다 — 일반 게시는 끝에 몰아 넣으면 되지만 in-place는 위치가 중요."""
         page = self._page
         if not at_anchor:
-            page.click(SMART_EDITOR["content_component"])
-            page.wait_for_timeout(300)
-            page.keyboard.press("End")
-            page.keyboard.press("Enter")  # 직전 문단과 안 섞이게 새 줄에서
+            # 사진·구분선·인용구 등으로 본문이 이미 여러 se-text 컴포넌트로 쪼개진 뒤라
+            # content_component 셀렉터로 클릭하면 '첫' 컴포넌트가 잡혀 커서가 문서 앞으로
+            # 튄다(_resize_image_smallest의 _focus_body_end와 동일 문제) — 항상 진짜
+            # 문서 끝으로 보내는 canvas 하단 버튼을 쓴다.
+            self._focus_body_end()
             page.wait_for_timeout(200)
 
         before = page.evaluate("()=>document.querySelectorAll('.se-component.se-oglink').length")
@@ -1862,10 +1887,12 @@ class BlogPublisher:
         )
         table_html = f"<table><tbody>{tr}</tbody></table>"
         if not at_anchor:
-            page.click(SMART_EDITOR["content_component"])
-            page.wait_for_timeout(300)
-            page.keyboard.press("End")
-            page.keyboard.press("Enter")
+            # _insert_link과 동일 문제: 본문이 이미 여러 se-text 컴포넌트로 쪼개진 뒤라
+            # content_component 클릭은 '첫' 컴포넌트를 잡아 커서가 문서 앞으로 튄다.
+            # 표를 거기 끼워 넣으면 그 뒤에 이어질 타이핑 전부가 잘못된 위치로 밀린다
+            # (이번 폼폼푸린 글에서 본문 절반이 유실된 원인) — 진짜 문서 끝으로 보내는
+            # canvas 하단 버튼을 쓴다.
+            self._focus_body_end()
             page.wait_for_timeout(200)
         before = page.evaluate("()=>document.querySelectorAll('.se-component').length")
         page.evaluate(
