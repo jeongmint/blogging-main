@@ -2611,6 +2611,7 @@ class BlogPublisher:
             SMART_EDITOR["editor_image"],
         )
         before = len(before_srcs)
+        self._dismiss_draft_popup()  # 업로드 버튼을 가로채는 알림(임시저장 토스트 등) 정리
         with page.expect_file_chooser() as fc_info:
             page.click(SMART_EDITOR["image_upload_button"])
         fc_info.value.set_files(path)
