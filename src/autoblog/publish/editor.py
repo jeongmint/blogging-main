@@ -476,7 +476,8 @@ class BlogPublisher:
                 f"{actual_title!r}만 들어갔어요. 잘못된 내용으로 저장되지 않도록 여기서 "
                 "중단합니다 — 다시 시도해 주세요."
             )
-        expected = sum(len(b.text) for b in plan.blocks if b.kind == "text" and b.text)
+        text_blocks = [b.text for b in plan.blocks if b.kind == "text" and b.text]
+        expected = sum(len(t) for t in text_blocks)
         if expected < 50:
             return  # 사진 위주라 본문 텍스트가 거의 없는 플랜은 검증 의미가 작음
         texts = self._page.eval_on_selector_all(
@@ -493,6 +494,20 @@ class BlogPublisher:
                 f"{actual}자만 들어갔어요(커서가 엉뚱한 곳으로 튀어 일부가 허공에 타이핑되거나 "
                 "순서가 뒤섞인 것으로 보여요). 잘못된 내용으로 저장되지 않도록 여기서 "
                 "중단합니다 — 다시 시도해 주세요."
+            )
+        # 글자 수 합계만으로는 못 잡는 손상이 있다 — 실측: 총 글자 수는 기준을 통과했는데,
+        # 실제로는 문단 경계에서 다른 문단과 글자 단위로 들러붙거나(예: "폼폼푸린백화점
+        # 구경을...") 단어 중간이 끊기고 그 나머지가 엉뚱한 곳에 재등장했다(예: "폼폼머랭쉐"
+        # 뒤에 끊겼다가 한참 뒤에 "이크였어요"로 재등장). 그래서 각 텍스트 블록의 내용을
+        # 공백 제거 후 '그대로 이어진 덩어리'로 찾아, 문단 하나라도 안 보이면(=다른 문단과
+        # 섞여 원래 형태를 잃음) 막는다.
+        actual_norm = "".join("".join(t.split()) for t in texts)
+        broken = sum(1 for t in text_blocks if "".join(t.split()) not in actual_norm)
+        if broken:
+            raise RuntimeError(
+                f"본문 순서/경계 손상 감지 — 텍스트 블록 {len(text_blocks)}개 중 {broken}개가 "
+                "다른 문단과 뒤섞이거나 잘려서 원래 형태 그대로 본문에서 찾을 수 없어요. "
+                "잘못된 내용으로 저장되지 않도록 여기서 중단합니다 — 다시 시도해 주세요."
             )
 
     def save_draft(self):
