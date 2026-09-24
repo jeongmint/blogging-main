@@ -2807,12 +2807,21 @@ class BlogPublisher:
             page.click(SMART_EDITOR["canvas_bottom_button"])
         except Exception:
             page.click(SMART_EDITOR["content_component"])  # 폴백: 본문 컴포넌트 클릭
+        settled = False
         for _ in range(10):
             if page.evaluate(_CARET_IN_LAST_TEXT_JS):
-                return
+                settled = True
+                break
             page.wait_for_timeout(100)
-        # 안전망: UI 클릭으로 안 되면 JS로 마지막 컴포넌트 끝에 캐럿을 강제로 둔다.
-        page.evaluate(_FORCE_CARET_TO_LAST_TEXT_END_JS)
+        if not settled:
+            # 안전망: UI 클릭으로 안 되면 JS로 마지막 컴포넌트 끝에 캐럿을 강제로 둔다.
+            page.evaluate(_FORCE_CARET_TO_LAST_TEXT_END_JS)
+        # 셀렉션이 '마지막' 컴포넌트에 들어간 뒤에도, 에디터 내부 모델이 그 DOM 변화를
+        # 다 반영하기까지 추가로 시간이 걸릴 수 있다(표/장소/인용구처럼 합성 이벤트로
+        # 삽입한 직후 특히 그렇다) — 셀렉션만 보고 바로 타이핑하면 그 사이의 내부
+        # 재조정과 keyboard.type()이 겹쳐 글자가 엉뚱한 자리로 꽂힌다(실측: 표/장소/
+        # 인용구 뒤 문단 손상이 셀렉션 확인만으로는 안 잡혔음). 추가 여유를 둔다.
+        page.wait_for_timeout(600)
 
     def _submit(self):
         self._clear_caret_mark()  # 내부 표식이 발행 본문에 남지 않게(save_draft와 동일 안전망)
