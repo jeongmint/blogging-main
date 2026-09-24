@@ -2644,6 +2644,14 @@ class BlogPublisher:
                     "협찬 사진 크기·정렬 자동 변경 실패 — 에디터에서 사진을 선택해 "
                     "‘작게’·가운데 정렬로 직접 바꿔 주세요."
                 )
+        else:
+            # 업로드 뒤 SE가 사진 컴포넌트 바로 다음에 빈 문단을 만들고 캐럿을 거기
+            # 두는 걸 그냥 믿고 있었다 — 사진 20장짜리 실측에서 가끔(20장 중 드물게 1곳)
+            # 다음 텍스트 블록이 엉뚱한 앞쪽 문단과 뒤섞이는 게 확인됐다. 표/인용구/장소와
+            # 같은 클래스의 문제라 같은 방식(마지막 컴포넌트인지 확인 후 아니면 강제 복구)
+            # 으로 잡는다 — 사진 수가 적을 때는 거의 안 보여 지금까지 놓쳤다.
+            if not page.evaluate(_CARET_IN_LAST_TEXT_JS):
+                self._focus_body_end()
         return None
 
     def _insert_video(self, path: str, title: str = "") -> bool:
