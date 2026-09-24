@@ -1681,12 +1681,30 @@ class BlogPublisher:
 
     # --- 에디터 조작 ---
     def _type_title(self, title: str, clear: bool = False):
-        self._page.click(SMART_EDITOR["title_component"])
-        if clear:  # in-place: 불러온 글의 기존 제목을 전체 선택해 지우고 새로 쓴다
-            self._page.keyboard.press("ControlOrMeta+a")
-            self._page.keyboard.press("Delete")
-            self._page.wait_for_timeout(150)
-        self._page.keyboard.type(title, delay=8)
+        """제목 입력. 실제로 온전히 들어갔는지 확인하고, 잘렸으면 지우고 재시도한다.
+
+        실측: 이 함수가 블록 삽입보다 먼저 실행되는데도(어떤 삽입 함수의 커서 버그와도
+        무관) 제목이 "[폼폼푸린...전체" 중 "["만 남고 잘려서 타이핑된 사례가 나왔다 —
+        페이지가 완전히 안정되기 전에 keyboard.type()이 시작되면 앞부분 키 입력이
+        씹히는, 이 세션 전반에 걸친 더 근본적인 타이밍 문제로 보인다. 그래서 여기서도
+        결과를 검증하고 짧으면 지우고 다시 친다(최대 3회)."""
+        page = self._page
+        for attempt in range(3):
+            page.click(SMART_EDITOR["title_component"])
+            page.keyboard.press("ControlOrMeta+a")
+            page.keyboard.press("Delete")
+            page.wait_for_timeout(150)
+            page.keyboard.type(title, delay=8)
+            page.wait_for_timeout(200)
+            actual = (
+                page.eval_on_selector(SMART_EDITOR["title_component"], "el => el ? el.innerText : ''")
+                or ""
+            ).strip()
+            if actual == title.strip():
+                return
+        # 3회 재시도로도 안 되면 이후 _verify_body_text가 최종 확인에서 막는다(여기선
+        # 강제 실패시키지 않고 넘어간다 — clear=False일 때 첫 클릭이 제목 조합 방식에
+        # 민감할 수 있어, 조기 예외보다 마지막 안전망에 맡기는 편이 더 안전하다).
 
     def _reset_text_toggles(self):
         """본문 진입 시, 직전 세션에서 켜진 채 남은 토글 서식(취소선/굵게/기울임/밑줄)이
