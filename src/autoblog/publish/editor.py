@@ -91,6 +91,41 @@ _SWATCH_DUMP_JS = r"""
 """
 
 
+# 캐럿이 '문서상 마지막' se-text 컴포넌트 안에 있는지(어느 se-text든이 아니라) 확인하는 JS.
+# 인용구/표/장소 삽입 뒤 '본문 추가' 버튼을 눌러도, 클릭이 실제로 포커스를 옮기기 전에
+# 다음 keyboard.type()이 시작되면 캐럿이 '이전' 문단에 그대로 남아있을 수 있다 — 그
+# 상태에서 타이핑하면 글자가 엉뚱한 앞쪽 문단 한가운데로 꽂힌다(실측: 표/인용구 뒤에
+# 넣은 문장이 그보다 앞선 문단 중간에 끼어듦). _caret_in_body()는 '어느 se-text든
+# 안에 있으면' 통과라 이 경우를 못 잡는다 — 반드시 '마지막' 컴포넌트인지까지 본다.
+_CARET_IN_LAST_TEXT_JS = """() => {
+  const comps = document.querySelectorAll('.se-component.se-text');
+  const last = comps[comps.length - 1];
+  if (!last) return false;
+  const s = getSelection();
+  if (!s || !s.rangeCount) return false;
+  let n = s.getRangeAt(0).startContainer;
+  if (n.nodeType === 3) n = n.parentNode;
+  return !!(n && n.closest && n.closest('.se-component.se-text') === last);
+}"""
+
+# 위 확인이 몇 차례 재시도해도 실패할 때 마지막 안전망 — UI 클릭에 기대지 않고 '마지막'
+# se-text 컴포넌트의 끝으로 캐럿을 직접 옮긴다(JS Range/Selection, 클릭 타이밍 문제 우회).
+_FORCE_CARET_TO_LAST_TEXT_END_JS = """() => {
+  const comps = document.querySelectorAll('.se-component.se-text');
+  const last = comps[comps.length - 1];
+  if (!last) return false;
+  const ed = last.querySelector('[contenteditable=true]') || last;
+  ed.focus();
+  const r = document.createRange();
+  r.selectNodeContents(ed);
+  r.collapse(false);
+  const s = getSelection();
+  s.removeAllRanges();
+  s.addRange(r);
+  return true;
+}"""
+
+
 class EditorNotImplemented(NotImplementedError):
     """로그인 후 셀렉터 확정 전까지 미구현인 단계."""
 
@@ -1742,6 +1777,10 @@ class BlogPublisher:
             close = page.query_selector("button.se-popup-close-button")
             if close:
                 close.click()
+            # 팝업을 열고 닫는 동안 캐럿이 날아간 채로 남는다 — 복원 안 하면 이어지는
+            # 타이핑이 엉뚱한 위치로 꽂힌다(실측). 성공 경로(아래 _restore_caret)와 동일하게
+            # 실패 경로에서도 반드시 복원한다.
+            self._restore_caret()
             return "네이버 장소 검색 결과가 없어 건너뛰었어요."
         idx = self._best_place_index(items, query, address)
         if relaxed and not self._addr_matches(items[idx].get("address", ""), address):
@@ -1749,6 +1788,7 @@ class BlogPublisher:
             close = page.query_selector("button.se-popup-close-button")
             if close:
                 close.click()
+            self._restore_caret()
             return "이름 그대로는 검색 결과가 없고, 완화 검색 결과는 수집 주소와 달라 건너뛰었어요."
         # 결과 리스트가 스크롤 영역이라 Playwright 가시성 검사에 안 걸릴 때가 있어 DOM .click()으로.
         page.evaluate(
@@ -2310,12 +2350,10 @@ class BlogPublisher:
             self._apply_align(align)  # 내용 입력 후(커서가 인용구 안에 있을 때) 정렬 적용
         if not at_end:
             return
-        # 인용 블록 탈출: '본문 추가'로 블록 뒤에 새 문단을 만들고 거기로 포커스
-        try:
-            self._page.click(SMART_EDITOR["canvas_bottom_button"])
-            self._page.wait_for_timeout(300)
-        except Exception:
-            self._page.keyboard.press("ArrowDown")
+        # 인용 블록 탈출: '본문 추가'로 블록 뒤에 새 문단을 만들고 거기로 포커스.
+        # _focus_body_end()가 클릭 뒤 캐럿이 실제로 본문에 들어갔는지 확인까지 하므로
+        # (고정 대기만으로는 다음 블록 타이핑 앞부분이 소리 없이 사라지는 게 실측됨) 그걸 쓴다.
+        self._focus_body_end()
 
     def _pick_insert_variant(self, name: str, n: int):
         """삽입 종류 드롭다운 열고 N번째 옵션 클릭(구분선/인용구 종류 선택)."""
@@ -2720,15 +2758,28 @@ class BlogPublisher:
         """사진/객체 선택을 풀고 본문 끝에 빈 문단을 만들어 커서를 본문으로 되돌린다.
 
         객체(이미지) 선택 상태에서 곧바로 타이핑하면 글자가 본문에 안 들어가고 사라진다.
-        '본문 추가' 버튼으로 끝에 새 문단을 만들고 거기에 포커스를 둔다(인용구 탈출과 동일)."""
+        '본문 추가' 버튼으로 끝에 새 문단을 만들고 거기에 포커스를 둔다(인용구 탈출과 동일).
+
+        버튼 클릭 뒤 고정 대기(250ms)만 믿고 바로 타이핑을 시작하면, 포커스 전환이 그
+        시점까지 실제로 안 끝났을 때 다음 keyboard.type()의 앞부분 글자가 아직 전환
+        중인 요소로 들어가 조용히 사라진다(실측: 인용구 뒤 문단에서 "인용구 삽입 후
+        테스트 문단입니다"처럼 앞 절반이 통째로 빠지고 뒷부분만 남음) — 고정 대기 대신
+        캐럿이 실제로 '마지막' 본문 컴포넌트에 들어갔는지 확인하며 재시도한다 — 단순히
+        '본문 어딘가'(구 _caret_in_body 기준)에 있는지만 보면, 캐럿이 이전(앞쪽) 문단에
+        남은 채로도 통과해 버려 다음 타이핑이 그 앞쪽 문단 한가운데로 꽂히는 걸 못 잡는다."""
         page = self._page
         page.keyboard.press("Escape")  # 객체 선택 해제
         page.wait_for_timeout(150)
         try:
             page.click(SMART_EDITOR["canvas_bottom_button"])
-            page.wait_for_timeout(250)
         except Exception:
             page.click(SMART_EDITOR["content_component"])  # 폴백: 본문 컴포넌트 클릭
+        for _ in range(10):
+            if page.evaluate(_CARET_IN_LAST_TEXT_JS):
+                return
+            page.wait_for_timeout(100)
+        # 안전망: UI 클릭으로 안 되면 JS로 마지막 컴포넌트 끝에 캐럿을 강제로 둔다.
+        page.evaluate(_FORCE_CARET_TO_LAST_TEXT_END_JS)
 
     def _submit(self):
         self._clear_caret_mark()  # 내부 표식이 발행 본문에 남지 않게(save_draft와 동일 안전망)
