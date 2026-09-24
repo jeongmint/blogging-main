@@ -78,6 +78,15 @@ presets:
     vision: qwen/qwen3.5-122b-a10b
     note: build.nvidia.com 호스티드. 텍스트·비전 모두 NVIDIA_API_KEY 하나로.
     concurrent_load: true
+  grok:
+    label: xAI API — Grok 4 Fast
+    provider: xai
+    text: grok-4-fast
+    vision: qwen/qwen3.5-122b-a10b
+    note: >-
+      2026-09-24 실측: grok-4/-4-fast/-3/-3-mini 모두 텍스트 응답 확인됨. XAI_API_KEY 필요.
+      비전은 미지원이라 NVIDIA(qwen) 사용. Gemini 무료 쿼터 소진 시 대체용.
+    concurrent_load: true
 default: gemini_37
 selection:
   text: gemini-3.7-flash

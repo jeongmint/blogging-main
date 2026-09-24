@@ -99,11 +99,16 @@ def _chat_openai(
     except APIError as exc:
         # 402=무료 크레딧 소진, 429=분당 요청 초과 — 잔여 크레딧 조회 API는 없어서 안내만
         if base_url and getattr(exc, "status_code", None) in (402, 429):
+            if "x.ai" in base_url:
+                raise LLMUnavailable(
+                    f"xAI(Grok) 한도 도달 — 크레딧 소진 또는 요청 한도 초과예요({exc}). 잠시 후 재시도하세요."
+                ) from exc
             raise LLMUnavailable(
                 "NVIDIA 한도 도달 — 무료 크레딧(1,000회) 소진 또는 분당 40회 초과예요. "
                 "잠시 후 재시도하거나 build.nvidia.com 로그인 후 잔여 크레딧을 확인하세요."
             ) from exc
-        raise LLMUnavailable(f"{'NVIDIA' if base_url else 'OpenAI'} API 오류: {exc}") from exc
+        provider_label = "xAI" if base_url and "x.ai" in base_url else ("NVIDIA" if base_url else "OpenAI")
+        raise LLMUnavailable(f"{provider_label} API 오류: {exc}") from exc
     return resp.choices[0].message.content or ""
 
 
@@ -119,6 +124,18 @@ def _chat_nvidia(
         base_url="https://integrate.api.nvidia.com/v1",
         key_name="NVIDIA_API_KEY",
         extra_body=extra_body,
+    )
+
+
+def _chat_xai(messages: list[dict], model: str, fmt: str | None = None) -> str:
+    """xAI(Grok) API — OpenAI 호환. XAI_API_KEY 필요."""
+    return _chat_openai(
+        messages,
+        model,
+        fmt,
+        api_key=load_env().xai_api_key,
+        base_url="https://api.x.ai/v1",
+        key_name="XAI_API_KEY",
     )
 
 
@@ -317,7 +334,9 @@ def chat(
         return _chat_gemini(messages, model, fmt=fmt)
     if provider == "nvidia":
         return _chat_nvidia(messages, model, fmt=fmt)
+    if provider == "xai":
+        return _chat_xai(messages, model, fmt=fmt)
     raise LLMUnavailable(
         f"텍스트 생성은 API 모델만 지원합니다(현재 model: {model!r}). "
-        "config/models.yaml 의 selection.text 를 claude-*/gpt-*/gemini-*/org/model(NVIDIA) 로 설정하세요."
+        "config/models.yaml 의 selection.text 를 claude-*/gpt-*/gemini-*/grok-*/org/model(NVIDIA) 로 설정하세요."
     )
