@@ -419,13 +419,28 @@ class BlogPublisher:
                 )
 
     def _verify_body_text(self, plan: PublishPlan) -> None:
-        """본문 타이핑 직후, 실제 본문 글자 수가 플랜과 크게 어긋나면 저장 전에 막는다.
+        """저장 직전, 실제 제목·본문 글자 수가 플랜과 크게 어긋나면 저장을 막는다.
 
         _insert_table/_insert_link처럼 '문서 끝'이 아닌 곳으로 커서가 튀는 삽입 뒤에는,
         그 지점부터 이어지는 타이핑이 본문이 아니라 허공으로 들어가 통째로 사라진다 —
         Python 예외 없이 조용히 저장까지 '성공'해 버린다(실측: 폼폼푸린 글에서 본문 절반
-        유실). 저장 직전에 se-text 컴포넌트의 실제 글자 수를 합산해 플랜이 요구하는
-        분량과 크게 어긋나면 예외로 막는다 — 경고만 남기면 다음에도 똑같이 못 알아챈다."""
+        유실). 제목도 예외가 아니다 — 같은 세션에서 제목 타이핑(_type_title, 블록
+        삽입보다 먼저 실행됨) 자체가 "[폼폼푸린...전체" 중 "[폼폼"만 남고 잘린 채로
+        저장된 사례가 실측됐다 — 커서/포커스가 튀는 원인이 특정 삽입 함수가 아니라 더
+        근본적인(에디터·네트워크 타이밍) 문제라는 뜻이라, 제목도 함께 검증한다.
+        저장 직전에 실제 제목·se-text 컴포넌트 글자 수를 플랜과 대조해 크게 어긋나면
+        예외로 막는다 — 경고만 남기면 다음에도 똑같이 못 알아챈다."""
+        actual_title = (
+            self._page.eval_on_selector(SMART_EDITOR["title_component"], "el => el ? el.innerText : ''")
+            or ""
+        ).strip()
+        expected_title = (plan.title or "").strip()
+        if expected_title and actual_title != expected_title:
+            raise RuntimeError(
+                f"제목 유실/손상 감지 — 플랜 제목은 {expected_title!r}인데 실제 에디터에는 "
+                f"{actual_title!r}만 들어갔어요. 잘못된 내용으로 저장되지 않도록 여기서 "
+                "중단합니다 — 다시 시도해 주세요."
+            )
         expected = sum(len(b.text) for b in plan.blocks if b.kind == "text" and b.text)
         if expected < 50:
             return  # 사진 위주라 본문 텍스트가 거의 없는 플랜은 검증 의미가 작음
