@@ -513,6 +513,28 @@ class BlogPublisher:
                 "다른 문단과 뒤섞이거나 잘려서 원래 형태 그대로 본문에서 찾을 수 없어요. "
                 "잘못된 내용으로 저장되지 않도록 여기서 중단합니다 — 다시 시도해 주세요."
             )
+        # 위 두 검사(합계 글자 수·문단 형태 보존)는 각 문단이 '온전히' 들어갔는지만 본다 —
+        # 문단 A와 B가 둘 다 안 잘리고 안 섞인 채로 자리만 서로 바뀐 경우(순서 역전)는
+        # 못 잡는다. 실측: "1. 소개" 같은 번호 매긴 소제목들이 본문에서 뒤죽박죽 순서로
+        # 나온 사례 — 그래서 플랜 순서대로 각 문단을 찾은 위치가 앞선 문단의 위치보다
+        # 뒤에 있는지(단조 증가)까지 확인한다.
+        cursor = 0
+        out_of_order = 0
+        for t in text_blocks:
+            key = "".join(t.split())
+            if not key:
+                continue
+            idx = actual_norm.find(key, cursor)
+            if idx == -1:
+                out_of_order += 1  # 이 지점부터는 못 찾음 = 앞으로 밀려나 순서가 어긋남
+                continue
+            cursor = idx + len(key)
+        if out_of_order:
+            raise RuntimeError(
+                f"문단 순서 뒤바뀜 감지 — 텍스트 블록 {len(text_blocks)}개 중 {out_of_order}개가 "
+                "플랜 순서와 다르게(뒤에 와야 할 문단이 앞에 오는 식으로) 배치됐어요. "
+                "잘못된 순서로 저장되지 않도록 여기서 중단합니다 — 다시 시도해 주세요."
+            )
 
     def save_draft(self):
         """임시저장."""
