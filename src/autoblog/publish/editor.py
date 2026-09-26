@@ -91,41 +91,6 @@ _SWATCH_DUMP_JS = r"""
 """
 
 
-# 캐럿이 '문서상 마지막' se-text 컴포넌트 안에 있는지(어느 se-text든이 아니라) 확인하는 JS.
-# 인용구/표/장소 삽입 뒤 '본문 추가' 버튼을 눌러도, 클릭이 실제로 포커스를 옮기기 전에
-# 다음 keyboard.type()이 시작되면 캐럿이 '이전' 문단에 그대로 남아있을 수 있다 — 그
-# 상태에서 타이핑하면 글자가 엉뚱한 앞쪽 문단 한가운데로 꽂힌다(실측: 표/인용구 뒤에
-# 넣은 문장이 그보다 앞선 문단 중간에 끼어듦). _caret_in_body()는 '어느 se-text든
-# 안에 있으면' 통과라 이 경우를 못 잡는다 — 반드시 '마지막' 컴포넌트인지까지 본다.
-_CARET_IN_LAST_TEXT_JS = """() => {
-  const comps = document.querySelectorAll('.se-component.se-text');
-  const last = comps[comps.length - 1];
-  if (!last) return false;
-  const s = getSelection();
-  if (!s || !s.rangeCount) return false;
-  let n = s.getRangeAt(0).startContainer;
-  if (n.nodeType === 3) n = n.parentNode;
-  return !!(n && n.closest && n.closest('.se-component.se-text') === last);
-}"""
-
-# 위 확인이 몇 차례 재시도해도 실패할 때 마지막 안전망 — UI 클릭에 기대지 않고 '마지막'
-# se-text 컴포넌트의 끝으로 캐럿을 직접 옮긴다(JS Range/Selection, 클릭 타이밍 문제 우회).
-_FORCE_CARET_TO_LAST_TEXT_END_JS = """() => {
-  const comps = document.querySelectorAll('.se-component.se-text');
-  const last = comps[comps.length - 1];
-  if (!last) return false;
-  const ed = last.querySelector('[contenteditable=true]') || last;
-  ed.focus();
-  const r = document.createRange();
-  r.selectNodeContents(ed);
-  r.collapse(false);
-  const s = getSelection();
-  s.removeAllRanges();
-  s.addRange(r);
-  return true;
-}"""
-
-
 class EditorNotImplemented(NotImplementedError):
     """로그인 후 셀렉터 확정 전까지 미구현인 단계."""
 
@@ -250,28 +215,6 @@ class BlogPublisher:
                     pass
                 page.wait_for_timeout(300)
 
-    def _click_content_component_safe(self) -> None:
-        """본문(제목 아래) 클릭 — 팝업에 안전하게(_click_safe로 위임)."""
-        self._click_safe(SMART_EDITOR["content_component"])
-
-    def _click_safe(self, selector: str) -> None:
-        """'작성 중인 글이 있습니다' 이어쓰기 알림이 예고 없이(제목 타이핑 뒤는 물론, 제목
-        재시도 클릭 도중에도) 나타나 클릭을 가로채는 경우가 있다(_load_draft_into_editor와
-        동일 현상). 이 알림은 se-popup-dim을 쓰지 않아 _dismiss_draft_popup의 딤 감지로는
-        안 잡힌다. 그래서 어떤 요소를 클릭하든 직전마다 이 팝업만 콕 집어 닫으며 재시도한다."""
-        from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
-
-        for _ in range(5):
-            self._dismiss_entry_popup()
-            try:
-                self._page.click(selector, timeout=5000)
-                return
-            except PlaywrightTimeoutError:
-                self._page.wait_for_timeout(400)
-        # 안전망: 그래도 안 닫히면 딤 기반 팝업 정리까지 시도한 뒤 강제 클릭.
-        self._dismiss_draft_popup()
-        self._page.click(selector, force=True)
-
     def _dismiss_entry_popup(self) -> bool:
         """진입 '이어쓰기' 팝업(작성 중인 글이 있습니다)만 콕 집어 '취소'로 닫는다.
 
@@ -317,7 +260,7 @@ class BlogPublisher:
         self._failed_images = set()  # 지난 저장의 실패 기록이 이번 매핑에 섞이지 않게
         self.open_write_page()
         self._type_title(plan.title)
-        self._click_content_component_safe()
+        self._page.click(SMART_EDITOR["content_component"])
         self._reset_text_toggles()  # 이전 세션에서 남은 토글 서식(취소선 등) 해제
         emphases = []
         for block in plan.blocks:
@@ -372,10 +315,6 @@ class BlogPublisher:
             self._mark_ai_images(plan)
         # 대표사진 지정은 반드시 '맨 마지막' — 사진 조작이 더 남아 있으면 플래그가 또 옮겨간다.
         self._set_rep_photo(plan, warnings)
-        # 본문 검증은 반드시 여기(타이핑+강조+정렬복구+AI표시+대표지정을 모두 마친 뒤,
-        # save_draft 바로 전)에서 한다 — 더 일찍 하면 그 뒤 단계들이 저지르는 손상을
-        # 놓친다(실측: 초반 검증은 통과했는데 이후 단계를 거치며 599자→396자로 더 깎였다).
-        self._verify_body_text(plan)
         if reserve_at is not None:
             # 예약 발행 = 발행이므로 임시저장/정리 팝업(딤 레이어)을 만들지 않고 바로 예약 발행한다
             # — save_draft·prune의 목록 팝업이 발행 레이어 클릭을 가로채는 충돌을 피한다.
@@ -456,85 +395,6 @@ class BlogPublisher:
                     "태그 자동 입력 실패 — 발행 창의 태그 칸에 직접 넣어 주세요: "
                     + " ".join("#" + t for t in clean)
                 )
-
-    def _verify_body_text(self, plan: PublishPlan) -> None:
-        """저장 직전, 실제 제목·본문 글자 수가 플랜과 크게 어긋나면 저장을 막는다.
-
-        _insert_table/_insert_link처럼 '문서 끝'이 아닌 곳으로 커서가 튀는 삽입 뒤에는,
-        그 지점부터 이어지는 타이핑이 본문이 아니라 허공으로 들어가 통째로 사라진다 —
-        Python 예외 없이 조용히 저장까지 '성공'해 버린다(실측: 폼폼푸린 글에서 본문 절반
-        유실). 제목도 예외가 아니다 — 같은 세션에서 제목 타이핑(_type_title, 블록
-        삽입보다 먼저 실행됨) 자체가 "[폼폼푸린...전체" 중 "[폼폼"만 남고 잘린 채로
-        저장된 사례가 실측됐다 — 커서/포커스가 튀는 원인이 특정 삽입 함수가 아니라 더
-        근본적인(에디터·네트워크 타이밍) 문제라는 뜻이라, 제목도 함께 검증한다.
-        저장 직전에 실제 제목·se-text 컴포넌트 글자 수를 플랜과 대조해 크게 어긋나면
-        예외로 막는다 — 경고만 남기면 다음에도 똑같이 못 알아챈다."""
-        actual_title = (
-            self._page.eval_on_selector(SMART_EDITOR["title_component"], "el => el ? el.innerText : ''")
-            or ""
-        ).strip()
-        expected_title = (plan.title or "").strip()
-        if expected_title and actual_title != expected_title:
-            raise RuntimeError(
-                f"제목 유실/손상 감지 — 플랜 제목은 {expected_title!r}인데 실제 에디터에는 "
-                f"{actual_title!r}만 들어갔어요. 잘못된 내용으로 저장되지 않도록 여기서 "
-                "중단합니다 — 다시 시도해 주세요."
-            )
-        text_blocks = [b.text for b in plan.blocks if b.kind == "text" and b.text]
-        expected = sum(len(t) for t in text_blocks)
-        if expected < 50:
-            return  # 사진 위주라 본문 텍스트가 거의 없는 플랜은 검증 의미가 작음
-        texts = self._page.eval_on_selector_all(
-            ".se-component.se-text", "els => els.map(e => e.innerText || '')"
-        )
-        actual = sum(len(t) for t in texts)
-        # 임계값 0.6→0.92: 완전 유실(예: 표 삽입 커서 버그, ~50% 소실)뿐 아니라, 타이핑 도중
-        # 포커스가 순간적으로 다른 곳으로 튀어 문단 순서가 뒤섞이는 부분 유실(실측: 816자 중
-        # 115자 누락 + 전후반 통째로 뒤바뀜, 중복 없음)도 잡아야 한다 — 후자는 합계 손실률이
-        # 작아(약 14%) 0.6 임계값은 통과해버렸다.
-        if actual < expected * 0.92:
-            raise RuntimeError(
-                f"본문 유실 감지 — 플랜상 텍스트는 {expected}자인데 실제 에디터에는 "
-                f"{actual}자만 들어갔어요(커서가 엉뚱한 곳으로 튀어 일부가 허공에 타이핑되거나 "
-                "순서가 뒤섞인 것으로 보여요). 잘못된 내용으로 저장되지 않도록 여기서 "
-                "중단합니다 — 다시 시도해 주세요."
-            )
-        # 글자 수 합계만으로는 못 잡는 손상이 있다 — 실측: 총 글자 수는 기준을 통과했는데,
-        # 실제로는 문단 경계에서 다른 문단과 글자 단위로 들러붙거나(예: "폼폼푸린백화점
-        # 구경을...") 단어 중간이 끊기고 그 나머지가 엉뚱한 곳에 재등장했다(예: "폼폼머랭쉐"
-        # 뒤에 끊겼다가 한참 뒤에 "이크였어요"로 재등장). 그래서 각 텍스트 블록의 내용을
-        # 공백 제거 후 '그대로 이어진 덩어리'로 찾아, 문단 하나라도 안 보이면(=다른 문단과
-        # 섞여 원래 형태를 잃음) 막는다.
-        actual_norm = "".join("".join(t.split()) for t in texts)
-        broken = sum(1 for t in text_blocks if "".join(t.split()) not in actual_norm)
-        if broken:
-            raise RuntimeError(
-                f"본문 순서/경계 손상 감지 — 텍스트 블록 {len(text_blocks)}개 중 {broken}개가 "
-                "다른 문단과 뒤섞이거나 잘려서 원래 형태 그대로 본문에서 찾을 수 없어요. "
-                "잘못된 내용으로 저장되지 않도록 여기서 중단합니다 — 다시 시도해 주세요."
-            )
-        # 위 두 검사(합계 글자 수·문단 형태 보존)는 각 문단이 '온전히' 들어갔는지만 본다 —
-        # 문단 A와 B가 둘 다 안 잘리고 안 섞인 채로 자리만 서로 바뀐 경우(순서 역전)는
-        # 못 잡는다. 실측: "1. 소개" 같은 번호 매긴 소제목들이 본문에서 뒤죽박죽 순서로
-        # 나온 사례 — 그래서 플랜 순서대로 각 문단을 찾은 위치가 앞선 문단의 위치보다
-        # 뒤에 있는지(단조 증가)까지 확인한다.
-        cursor = 0
-        out_of_order = 0
-        for t in text_blocks:
-            key = "".join(t.split())
-            if not key:
-                continue
-            idx = actual_norm.find(key, cursor)
-            if idx == -1:
-                out_of_order += 1  # 이 지점부터는 못 찾음 = 앞으로 밀려나 순서가 어긋남
-                continue
-            cursor = idx + len(key)
-        if out_of_order:
-            raise RuntimeError(
-                f"문단 순서 뒤바뀜 감지 — 텍스트 블록 {len(text_blocks)}개 중 {out_of_order}개가 "
-                "플랜 순서와 다르게(뒤에 와야 할 문단이 앞에 오는 식으로) 배치됐어요. "
-                "잘못된 순서로 저장되지 않도록 여기서 중단합니다 — 다시 시도해 주세요."
-            )
 
     def save_draft(self):
         """임시저장."""
@@ -1707,30 +1567,12 @@ class BlogPublisher:
 
     # --- 에디터 조작 ---
     def _type_title(self, title: str, clear: bool = False):
-        """제목 입력. 실제로 온전히 들어갔는지 확인하고, 잘렸으면 지우고 재시도한다.
-
-        실측: 이 함수가 블록 삽입보다 먼저 실행되는데도(어떤 삽입 함수의 커서 버그와도
-        무관) 제목이 "[폼폼푸린...전체" 중 "["만 남고 잘려서 타이핑된 사례가 나왔다 —
-        페이지가 완전히 안정되기 전에 keyboard.type()이 시작되면 앞부분 키 입력이
-        씹히는, 이 세션 전반에 걸친 더 근본적인 타이밍 문제로 보인다. 그래서 여기서도
-        결과를 검증하고 짧으면 지우고 다시 친다(최대 3회)."""
-        page = self._page
-        for attempt in range(3):
-            self._click_safe(SMART_EDITOR["title_component"])
-            page.keyboard.press("ControlOrMeta+a")
-            page.keyboard.press("Delete")
-            page.wait_for_timeout(150)
-            page.keyboard.type(title, delay=8)
-            page.wait_for_timeout(200)
-            actual = (
-                page.eval_on_selector(SMART_EDITOR["title_component"], "el => el ? el.innerText : ''")
-                or ""
-            ).strip()
-            if actual == title.strip():
-                return
-        # 3회 재시도로도 안 되면 이후 _verify_body_text가 최종 확인에서 막는다(여기선
-        # 강제 실패시키지 않고 넘어간다 — clear=False일 때 첫 클릭이 제목 조합 방식에
-        # 민감할 수 있어, 조기 예외보다 마지막 안전망에 맡기는 편이 더 안전하다).
+        self._page.click(SMART_EDITOR["title_component"])
+        if clear:  # in-place: 불러온 글의 기존 제목을 전체 선택해 지우고 새로 쓴다
+            self._page.keyboard.press("ControlOrMeta+a")
+            self._page.keyboard.press("Delete")
+            self._page.wait_for_timeout(150)
+        self._page.keyboard.type(title, delay=8)
 
     def _reset_text_toggles(self):
         """본문 진입 시, 직전 세션에서 켜진 채 남은 토글 서식(취소선/굵게/기울임/밑줄)이
@@ -1836,10 +1678,6 @@ class BlogPublisher:
             close = page.query_selector("button.se-popup-close-button")
             if close:
                 close.click()
-            # 팝업을 열고 닫는 동안 캐럿이 날아간 채로 남는다 — 복원 안 하면 이어지는
-            # 타이핑이 엉뚱한 위치로 꽂힌다(실측). 성공 경로(아래 _restore_caret)와 동일하게
-            # 실패 경로에서도 반드시 복원한다.
-            self._restore_caret()
             return "네이버 장소 검색 결과가 없어 건너뛰었어요."
         idx = self._best_place_index(items, query, address)
         if relaxed and not self._addr_matches(items[idx].get("address", ""), address):
@@ -1847,7 +1685,6 @@ class BlogPublisher:
             close = page.query_selector("button.se-popup-close-button")
             if close:
                 close.click()
-            self._restore_caret()
             return "이름 그대로는 검색 결과가 없고, 완화 검색 결과는 수집 주소와 달라 건너뛰었어요."
         # 결과 리스트가 스크롤 영역이라 Playwright 가시성 검사에 안 걸릴 때가 있어 DOM .click()으로.
         page.evaluate(
@@ -1936,11 +1773,10 @@ class BlogPublisher:
         문단)에 그대로 붙여넣는다 — 일반 게시는 끝에 몰아 넣으면 되지만 in-place는 위치가 중요."""
         page = self._page
         if not at_anchor:
-            # 사진·구분선·인용구 등으로 본문이 이미 여러 se-text 컴포넌트로 쪼개진 뒤라
-            # content_component 셀렉터로 클릭하면 '첫' 컴포넌트가 잡혀 커서가 문서 앞으로
-            # 튄다(_resize_image_smallest의 _focus_body_end와 동일 문제) — 항상 진짜
-            # 문서 끝으로 보내는 canvas 하단 버튼을 쓴다.
-            self._focus_body_end()
+            page.click(SMART_EDITOR["content_component"])
+            page.wait_for_timeout(300)
+            page.keyboard.press("End")
+            page.keyboard.press("Enter")  # 직전 문단과 안 섞이게 새 줄에서
             page.wait_for_timeout(200)
 
         before = page.evaluate("()=>document.querySelectorAll('.se-component.se-oglink').length")
@@ -2008,12 +1844,10 @@ class BlogPublisher:
         )
         table_html = f"<table><tbody>{tr}</tbody></table>"
         if not at_anchor:
-            # _insert_link과 동일 문제: 본문이 이미 여러 se-text 컴포넌트로 쪼개진 뒤라
-            # content_component 클릭은 '첫' 컴포넌트를 잡아 커서가 문서 앞으로 튄다.
-            # 표를 거기 끼워 넣으면 그 뒤에 이어질 타이핑 전부가 잘못된 위치로 밀린다
-            # (이번 폼폼푸린 글에서 본문 절반이 유실된 원인) — 진짜 문서 끝으로 보내는
-            # canvas 하단 버튼을 쓴다.
-            self._focus_body_end()
+            page.click(SMART_EDITOR["content_component"])
+            page.wait_for_timeout(300)
+            page.keyboard.press("End")
+            page.keyboard.press("Enter")
             page.wait_for_timeout(200)
         before = page.evaluate("()=>document.querySelectorAll('.se-component').length")
         page.evaluate(
@@ -2409,10 +2243,12 @@ class BlogPublisher:
             self._apply_align(align)  # 내용 입력 후(커서가 인용구 안에 있을 때) 정렬 적용
         if not at_end:
             return
-        # 인용 블록 탈출: '본문 추가'로 블록 뒤에 새 문단을 만들고 거기로 포커스.
-        # _focus_body_end()가 클릭 뒤 캐럿이 실제로 본문에 들어갔는지 확인까지 하므로
-        # (고정 대기만으로는 다음 블록 타이핑 앞부분이 소리 없이 사라지는 게 실측됨) 그걸 쓴다.
-        self._focus_body_end()
+        # 인용 블록 탈출: '본문 추가'로 블록 뒤에 새 문단을 만들고 거기로 포커스
+        try:
+            self._page.click(SMART_EDITOR["canvas_bottom_button"])
+            self._page.wait_for_timeout(300)
+        except Exception:
+            self._page.keyboard.press("ArrowDown")
 
     def _pick_insert_variant(self, name: str, n: int):
         """삽입 종류 드롭다운 열고 N번째 옵션 클릭(구분선/인용구 종류 선택)."""
@@ -2633,7 +2469,6 @@ class BlogPublisher:
             SMART_EDITOR["editor_image"],
         )
         before = len(before_srcs)
-        self._dismiss_draft_popup()  # 업로드 버튼을 가로채는 알림(임시저장 토스트 등) 정리
         with page.expect_file_chooser() as fc_info:
             page.click(SMART_EDITOR["image_upload_button"])
         fc_info.value.set_files(path)
@@ -2667,14 +2502,6 @@ class BlogPublisher:
                     "협찬 사진 크기·정렬 자동 변경 실패 — 에디터에서 사진을 선택해 "
                     "‘작게’·가운데 정렬로 직접 바꿔 주세요."
                 )
-        else:
-            # 업로드 뒤 SE가 사진 컴포넌트 바로 다음에 빈 문단을 만들고 캐럿을 거기
-            # 두는 걸 그냥 믿고 있었다 — 사진 20장짜리 실측에서 가끔(20장 중 드물게 1곳)
-            # 다음 텍스트 블록이 엉뚱한 앞쪽 문단과 뒤섞이는 게 확인됐다. 표/인용구/장소와
-            # 같은 클래스의 문제라 같은 방식(마지막 컴포넌트인지 확인 후 아니면 강제 복구)
-            # 으로 잡는다 — 사진 수가 적을 때는 거의 안 보여 지금까지 놓쳤다.
-            if not page.evaluate(_CARET_IN_LAST_TEXT_JS):
-                self._focus_body_end()
         return None
 
     def _insert_video(self, path: str, title: str = "") -> bool:
@@ -2826,37 +2653,15 @@ class BlogPublisher:
         """사진/객체 선택을 풀고 본문 끝에 빈 문단을 만들어 커서를 본문으로 되돌린다.
 
         객체(이미지) 선택 상태에서 곧바로 타이핑하면 글자가 본문에 안 들어가고 사라진다.
-        '본문 추가' 버튼으로 끝에 새 문단을 만들고 거기에 포커스를 둔다(인용구 탈출과 동일).
-
-        버튼 클릭 뒤 고정 대기(250ms)만 믿고 바로 타이핑을 시작하면, 포커스 전환이 그
-        시점까지 실제로 안 끝났을 때 다음 keyboard.type()의 앞부분 글자가 아직 전환
-        중인 요소로 들어가 조용히 사라진다(실측: 인용구 뒤 문단에서 "인용구 삽입 후
-        테스트 문단입니다"처럼 앞 절반이 통째로 빠지고 뒷부분만 남음) — 고정 대기 대신
-        캐럿이 실제로 '마지막' 본문 컴포넌트에 들어갔는지 확인하며 재시도한다 — 단순히
-        '본문 어딘가'(구 _caret_in_body 기준)에 있는지만 보면, 캐럿이 이전(앞쪽) 문단에
-        남은 채로도 통과해 버려 다음 타이핑이 그 앞쪽 문단 한가운데로 꽂히는 걸 못 잡는다."""
+        '본문 추가' 버튼으로 끝에 새 문단을 만들고 거기에 포커스를 둔다(인용구 탈출과 동일)."""
         page = self._page
         page.keyboard.press("Escape")  # 객체 선택 해제
         page.wait_for_timeout(150)
         try:
-            self._click_safe(SMART_EDITOR["canvas_bottom_button"])
+            page.click(SMART_EDITOR["canvas_bottom_button"])
+            page.wait_for_timeout(250)
         except Exception:
-            self._click_safe(SMART_EDITOR["content_component"])  # 폴백: 본문 컴포넌트 클릭
-        settled = False
-        for _ in range(10):
-            if page.evaluate(_CARET_IN_LAST_TEXT_JS):
-                settled = True
-                break
-            page.wait_for_timeout(100)
-        if not settled:
-            # 안전망: UI 클릭으로 안 되면 JS로 마지막 컴포넌트 끝에 캐럿을 강제로 둔다.
-            page.evaluate(_FORCE_CARET_TO_LAST_TEXT_END_JS)
-        # 셀렉션이 '마지막' 컴포넌트에 들어간 뒤에도, 에디터 내부 모델이 그 DOM 변화를
-        # 다 반영하기까지 추가로 시간이 걸릴 수 있다(표/장소/인용구처럼 합성 이벤트로
-        # 삽입한 직후 특히 그렇다) — 셀렉션만 보고 바로 타이핑하면 그 사이의 내부
-        # 재조정과 keyboard.type()이 겹쳐 글자가 엉뚱한 자리로 꽂힌다(실측: 표/장소/
-        # 인용구 뒤 문단 손상이 셀렉션 확인만으로는 안 잡혔음). 추가 여유를 둔다.
-        page.wait_for_timeout(600)
+            page.click(SMART_EDITOR["content_component"])  # 폴백: 본문 컴포넌트 클릭
 
     def _submit(self):
         self._clear_caret_mark()  # 내부 표식이 발행 본문에 남지 않게(save_draft와 동일 안전망)

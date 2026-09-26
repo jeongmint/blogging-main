@@ -30,7 +30,6 @@ class Guidelines(BaseModel):
     emphasis_features: list[str] = Field(default_factory=list)  # 강조할 특징
     forbidden_expressions: list[str] = Field(default_factory=list)  # 금지 표현
     min_chars: int | None = None
-    max_chars: int | None = None
     min_photos: int | None = None
 
     def is_empty(self) -> bool:
@@ -41,7 +40,6 @@ class Guidelines(BaseModel):
                 self.emphasis_features,
                 self.forbidden_expressions,
                 self.min_chars,
-                self.max_chars,
                 self.min_photos,
             ]
         )
@@ -59,22 +57,11 @@ class Guidelines(BaseModel):
             lines.append(f"- 필수 해시태그(끝에): {' '.join(self.required_hashtags)}")
         if self.forbidden_expressions:
             lines.append(f"- 금지 표현(쓰지 말 것): {', '.join(self.forbidden_expressions)}")
-        if self.min_chars and self.max_chars:
-            lines.append(
-                f"- 글자 수: 순수 본문 텍스트만 {self.min_chars}~{self.max_chars}자 범위"
-                "(네이버 글자 수 세기 프로그램 기준·공백 제외) — 이 범위를 넘기지 마세요, 길게 늘어지지 않게. "
-                "엔터(줄바꿈)와 [사진]·[지도]·[스티커]·[구분선]·[인용구] 같은 마커는 글자 수에 포함하지 마세요."
-            )
-        elif self.min_chars:
+        if self.min_chars:
             lines.append(
                 f"- 최소 글자 수: 순수 본문 텍스트만 {self.min_chars}자 이상"
                 "(네이버 글자 수 세기 프로그램 기준·공백 제외). "
                 "엔터(줄바꿈)와 [사진]·[지도]·[스티커]·[구분선]·[인용구] 같은 마커는 글자 수에 포함하지 마세요."
-            )
-        elif self.max_chars:
-            lines.append(
-                f"- 최대 글자 수: 순수 본문 텍스트만 {self.max_chars}자 이하"
-                "(네이버 글자 수 세기 프로그램 기준·공백 제외)."
             )
         if self.min_photos:
             lines.append(f"- 사진 최소 {self.min_photos}장(본문에 사진 자리 표시)")
@@ -111,14 +98,6 @@ def check_guidelines(
             CheckItem(
                 item=f"최소 {guidelines.min_chars}자",
                 ok=length >= guidelines.min_chars,
-                detail=f"현재 {length}자(공백 제외)",
-            )
-        )
-    if guidelines.max_chars:
-        results.append(
-            CheckItem(
-                item=f"최대 {guidelines.max_chars}자",
-                ok=length <= guidelines.max_chars,
                 detail=f"현재 {length}자(공백 제외)",
             )
         )
