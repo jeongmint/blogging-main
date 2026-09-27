@@ -186,6 +186,13 @@ class BlogPublisher:
         """
         page = self._page
         dim_sel = ".se-popup-dim"
+        # 이어쓰기 팝업은 본문이 뜬 뒤 ~2초 늦게 렌더되기도 한다(느린 네트워크·headless 실측).
+        # 첫 확인에서 딤이 없다고 바로 끝내면, 늦게 뜬 팝업이 다음 본문 클릭을 가로채 30초
+        # 타임아웃으로 게시가 통째로 실패한다 — 짧게 한 번 기다려 본다(없으면 그냥 진행).
+        try:
+            page.wait_for_selector(dim_sel, state="visible", timeout=3000)
+        except Exception:  # noqa: BLE001 - 팝업 없음이 정상 경로
+            pass
         # 팝업이 늦게 뜨는 케이스까지 잡으려 몇 라운드 반복. 각 라운드에서 딤이 없으면 종료.
         for _ in range(8):
             dim = page.query_selector(dim_sel)
