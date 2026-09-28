@@ -119,7 +119,9 @@ def test_variation_block_type_specific():
     from autoblog.draft.variation import build_variation_block
 
     prod = build_variation_block("메모|파우치", is_product=True)
-    assert "추천 체크리스트 소제목" in prod and "🌟" in prod
+    # 상품 글도 🌟 체크리스트·요약 박스 지시를 넣지 않는다(product.md 문장체 전환)
+    assert "추천 체크리스트 소제목" not in prod and "🌟" not in prod
+    assert "요약 박스" not in prod
     place = build_variation_block("메모|가게", is_product=False)
     assert "PICK 리스트 전환 멘트" in place
     assert "추천 체크리스트 소제목" not in place

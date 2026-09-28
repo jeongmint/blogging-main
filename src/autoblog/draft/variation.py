@@ -228,15 +228,10 @@ def build_variation_block(
         if quote_positions:
             lines.append(f"- 핵심 한마디 위치: {rng.choice(quote_positions)}")
 
-    if is_product:
-        headings = pool.get("checklist_heading") or []
-        if headings:
-            lines.append(f'- 추천 체크리스트 소제목: "🌟 {rng.choice(headings)}"')
-        connectors = pool.get("summary_connector") or []
-        if connectors:
-            conn = rng.choice(connectors)
-            lines.append(f"- 핵심 요약 박스의 소제목-설명 연결 문자: '{conn}'")
-    else:
+    # 상품 글엔 구조 변주를 더 넣지 않는다 — product.md가 핵심요약 박스(1️⃣~)·추천 체크리스트
+    # (🌟/✅)를 없애고 문장체로 바꿨는데, 여기서 "🌟 소제목"·"요약 박스 연결 문자"를 계속
+    # 지시하면 베이스보다 나중에 읽혀 🌟 소제목이 되살아난다(이글립스 글 실측).
+    if not is_product:
         transitions = pool.get("pick_transition") or []
         if transitions:
             lines.append(
