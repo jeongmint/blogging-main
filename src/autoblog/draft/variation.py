@@ -242,11 +242,13 @@ def build_variation_block(
     # 제목·첫 문장 변주(모든 어투 유지 — 유사문서/도배 방지). 프롬프트는 "형식을 글마다 바꿔"라고만
     # 해서 모델이 매번 같은 패턴으로 굳는다. 여기서 이번 글의 형식을 하나로 못박아
     # 강제한다(정보 키워드를 자연스러운 문장으로 녹여 넣는 원칙은 형식과 무관하게 유지).
+    # 장소 글(맛집·체험형 장소)은 제목이 "[시도/시군구] 가게명, 한 줄+이모지" 고정 형식이라
+    # (default.md·venue.md) 형식·훅 변주를 넣으면 고정 형식과 충돌한다 — 상품 글만 변주한다.
     title_formats = pool.get("title_format") or []
-    if title_formats:
+    if title_formats and is_product:
         lines.append(f"- 검색 제목 형식: 이번 글은 {rng.choice(title_formats)} 형식으로만 써.")
     title_hooks = pool.get("title_hook") or []
-    if title_hooks:
+    if title_hooks and is_product:
         lines.append(
             f"- 제목 훅: 이번 글은 {rng.choice(title_hooks)} 훅 하나를 넣어"
             " — 본문에 실제로 나오는 사실만, 과장·어그로 단어 금지."
