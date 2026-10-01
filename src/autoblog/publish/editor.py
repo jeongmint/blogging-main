@@ -1674,24 +1674,26 @@ class BlogPublisher:
         n_before = page.evaluate(self._MAP_COUNT_JS)
         page.click("button.se-map-toolbar-button")
         page.wait_for_timeout(1500)
-        items: list[dict] = []
-        relaxed = False
-        for i, q in enumerate(self._place_query_variants(query)):
+        idx = -1
+        any_results = False
+        for i, q in enumerate(self._place_query_variants(query, address)):
             items = self._search_place(q)
-            if items:
-                relaxed = i > 0
+            if not items:
+                continue
+            any_results = True
+            cand = self._best_place_index(items, query, address)
+            # 완화 질의(브랜드명만 등)는 엉뚱한 지점이 걸릴 수 있어 주소가 맞을 때만 쓰고,
+            # 안 맞으면 다음 질의(브랜드+도로명)로 넘어간다 — 첫 완화 결과에서 바로 포기하면
+            # 정확히 찾을 수 있던 지점을 놓쳤다(실측: 러쉬 현대백화점판교점).
+            if i == 0 or self._addr_matches(items[cand].get("address", ""), address):
+                idx = cand
                 break
-        if not items:
+        if idx < 0:
             close = page.query_selector("button.se-popup-close-button")
             if close:
                 close.click()
-            return "네이버 장소 검색 결과가 없어 건너뛰었어요."
-        idx = self._best_place_index(items, query, address)
-        if relaxed and not self._addr_matches(items[idx].get("address", ""), address):
-            # 완화 질의(브랜드명만)는 엉뚱한 지점이 걸릴 수 있어 주소가 맞을 때만 쓴다
-            close = page.query_selector("button.se-popup-close-button")
-            if close:
-                close.click()
+            if not any_results:
+                return "네이버 장소 검색 결과가 없어 건너뛰었어요."
             return "이름 그대로는 검색 결과가 없고, 완화 검색 결과는 수집 주소와 달라 건너뛰었어요."
         # 결과 리스트가 스크롤 영역이라 Playwright 가시성 검사에 안 걸릴 때가 있어 DOM .click()으로.
         page.evaluate(
@@ -1746,15 +1748,22 @@ class BlogPublisher:
         )
 
     @staticmethod
-    def _place_query_variants(name: str) -> list[str]:
-        """검색 0건일 때 순서대로 시도할 질의 — 원본 → 지점 접미사 제거.
+    def _place_query_variants(name: str, address: str | None = None) -> list[str]:
+        """검색 0건일 때 순서대로 시도할 질의 — 원본 → 지점 접미사 제거 → 브랜드+도로명.
 
         '차지 강남플래그십점'처럼 지점명이 붙으면 SE 장소 검색이 0건으로 나오는 경우가 있어
-        브랜드명만으로 한 번 더 찾는다(대신 주소가 맞을 때만 채택)."""
+        브랜드명만으로 한 번 더 찾는다(대신 주소가 맞을 때만 채택). 브랜드명만으로는 엉뚱한
+        지점만 걸릴 때를 대비해 '브랜드 + 도로명 주소'도 시도한다 — 실측: '러쉬 현대백화점판교점'
+        은 0건, '러쉬'는 다른 지점만, '러쉬 판교역로146번길 20'은 정확히 1건."""
         out = [name]
         base = re.sub(r"\s*\S*점$", "", name).strip()
         if base and base != name:
             out.append(base)
+        road = re.search(r"(\S+(?:로|길))\s*(\d+(?:-\d+)?)", address or "")
+        if road:
+            q = f"{base or name} {road.group(1)} {road.group(2)}"
+            if q not in out:
+                out.append(q)
         return out
 
     @classmethod
