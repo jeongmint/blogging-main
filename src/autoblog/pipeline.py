@@ -443,6 +443,15 @@ def run_pipeline(
             place_url, product, photos, photo_meta=photo_meta,
             card_kind=card_kind, place_hint=place_hint, use_cache=use_cache, progress=progress,
         )
+    elif photos and not card.photos:
+        # 카드를 직접 넘긴 경우에도 사진은 붙인다 — 수집만 건너뛰는 경로인데 사진까지
+        # 버려져 플랜에 이미지 블록이 하나도 안 생기던 실측 버그(글이 사진 없이 저장됨).
+        from autoblog.collect.photos import attach_photos, classify_photos_into
+
+        if photo_meta is not None:
+            attach_photos(card, photos, photo_meta)
+        else:
+            classify_photos_into(card, photos)
 
     catalog = None
     labels: list[str] = []
