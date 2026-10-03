@@ -80,7 +80,7 @@ presets:
     concurrent_load: true
 default: gemini_37
 selection:
-  text: gemini-3.7-flash
-  vision: gemini-3.7-flash
+  text: gemini-3.8-flash
+  vision: google/gemma-4-31b-it
 caption:
-  model: qwen/qwen3.5-122b-a10b
+  model: google/gemma-4-31b-it
