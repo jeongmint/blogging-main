@@ -1581,6 +1581,25 @@ class BlogPublisher:
             self._page.wait_for_timeout(150)
         self._page.keyboard.type(title, delay=8)
 
+    def _click_body(self, last: bool = False):
+        """본문 텍스트 컴포넌트를 클릭해 포커스를 본문으로 옮긴다.
+
+        표가 여러 개 들어간 뒤에는 첫 se-text가 표 툴바 등에 가려져 일반 클릭이 30초
+        타임아웃으로 저장 전체를 실패시킨 적이 있다(표 3개 글). 짧게 일반 클릭을 시도하고,
+        막히면 마지막 se-text를 force 클릭한다 — 호출부는 어차피 End로 끝에 붙인다.
+        last=True면 처음부터 마지막 se-text를 노린다(본문 끝으로 커서를 옮길 때)."""
+        page = self._page
+        try:
+            if last:
+                raise LookupError
+            page.click(SMART_EDITOR["content_component"], timeout=5000)
+        except Exception:
+            comps = page.query_selector_all(SMART_EDITOR["content_component"])
+            if not comps:
+                raise
+            comps[-1].scroll_into_view_if_needed()
+            comps[-1].click(force=True)
+
     def _reset_text_toggles(self):
         """본문 진입 시, 직전 세션에서 켜진 채 남은 토글 서식(취소선/굵게/기울임/밑줄)이
         활성(se-is-selected)이면 한 번 눌러 끈다. 활성이 아니면 건드리지 않는다.
@@ -1789,7 +1808,7 @@ class BlogPublisher:
         문단)에 그대로 붙여넣는다 — 일반 게시는 끝에 몰아 넣으면 되지만 in-place는 위치가 중요."""
         page = self._page
         if not at_anchor:
-            page.click(SMART_EDITOR["content_component"])
+            self._click_body()
             page.wait_for_timeout(300)
             page.keyboard.press("End")
             page.keyboard.press("Enter")  # 직전 문단과 안 섞이게 새 줄에서
@@ -1860,7 +1879,7 @@ class BlogPublisher:
         )
         table_html = f"<table><tbody>{tr}</tbody></table>"
         if not at_anchor:
-            page.click(SMART_EDITOR["content_component"])
+            self._click_body()
             page.wait_for_timeout(300)
             page.keyboard.press("End")
             page.keyboard.press("Enter")
@@ -2674,10 +2693,10 @@ class BlogPublisher:
         page.keyboard.press("Escape")  # 객체 선택 해제
         page.wait_for_timeout(150)
         try:
-            page.click(SMART_EDITOR["canvas_bottom_button"])
+            page.click(SMART_EDITOR["canvas_bottom_button"], timeout=5000)
             page.wait_for_timeout(250)
         except Exception:
-            page.click(SMART_EDITOR["content_component"])  # 폴백: 본문 컴포넌트 클릭
+            self._click_body(last=True)  # 폴백: 마지막 본문 컴포넌트 클릭
 
     def _submit(self):
         self._clear_caret_mark()  # 내부 표식이 발행 본문에 남지 않게(save_draft와 동일 안전망)
