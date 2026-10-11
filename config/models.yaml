@@ -1,27 +1,11 @@
 presets:
-  gemini:
-    label: Gemini API — 3.5 Flash (무료 티어 OK)
-    provider: gemini
-    text: gemini-3.5-flash
-    vision: gemini-2.5-flash
-    note: 지시 정확. GEMINI_API_KEY 필요. 무료 티어 키 사용 가능(Pro 계열은 쿼터 0 — 결제 필요).
-    concurrent_load: true
-  gemini_37:
-    label: Gemini API — 3.7 Flash (무료, 텍스트·비전 실측 확인됨)
-    provider: gemini
-    text: gemini-3.7-flash
-    vision: gemini-3.7-flash
-    note: >-
-      2026-09-23 실측: 텍스트·비전 호출(사진 분류 "외관" 정상 반환) 둘 다 무료 티어로
-      성공. 공식 가격표에도 Free of charge로 명시됨(gemini-2.5-flash 비전은 단종 404).
-    concurrent_load: true
   gemini_36:
     label: Gemini API — 3.6 Flash (무료·신형, 현재 가장 안정)
     provider: gemini
     text: gemini-3.6-flash
     vision: gemini-2.5-flash
     note: >-
-      3.5 Flash보다 신형이면서 실제로 되는 조합. 2026-09-04 실측에서 초안 크기 요청
+      3.5·3.7 Flash가 Google 측에서 차단(2026-10 안내 메일)된 뒤의 기본 프리셋. 실제로 되는 조합. 2026-09-04 실측에서 초안 크기 요청
       4/4 성공(35~53초)이고, 같은 시간대 3.7·3.8은 0/4(503), 3.5도 1회 503이 났다.
       thinking 지원 레벨은 minimal/low/medium/high(기본 medium).
     concurrent_load: true
@@ -33,7 +17,7 @@ presets:
     note: >-
       3.5 Flash보다 신형. 단 2026-09-04 실측에서 초안 크기 요청이 503 UNAVAILABLE
       ("high demand")로 연속 실패했다 — 출시 직후 혼잡. 짧은 호출은 통과한다.
-      혼잡이 풀린 뒤 쓰고, 실패하면 gemini(3.5 Flash) 프리셋으로 되돌릴 것.
+      혼잡이 풀린 뒤 쓰고, 실패하면 gemini_36(3.6 Flash) 프리셋으로 되돌릴 것.
       thinking 지원 레벨은 low/medium/high(기본 medium) — minimal은 없다.
     concurrent_load: true
   claude:
@@ -78,7 +62,7 @@ presets:
     vision: qwen/qwen3.5-122b-a10b
     note: build.nvidia.com 호스티드. 텍스트·비전 모두 NVIDIA_API_KEY 하나로.
     concurrent_load: true
-default: gemini_37
+default: gemini_36
 selection:
   text: gemini-3.8-flash
   vision: google/gemma-4-31b-it
