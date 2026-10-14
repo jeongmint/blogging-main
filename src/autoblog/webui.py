@@ -2917,7 +2917,7 @@ const PROV={
   nvidia:{name:'NVIDIA API',short:'NVIDIA',color:'#76b900',ph:'nvapi-...',issuer:'build.nvidia.com › API Keys',free:'https://build.nvidia.com/qwen/qwen3.5-397b-a17b'},
 };
 // 모델 표시명 — 코드명 대신 사람이 읽기 좋게(없으면 원본)
-const MODELNAME={'claude-opus-4-8':'Opus 4.8','claude-sonnet-4-6':'Sonnet 4.6','gpt-4o':'GPT-4o','gemini-3.5-flash':'3.5 Flash',
+const MODELNAME={'claude-opus-4-8':'Opus 4.8','claude-sonnet-4-6':'Sonnet 4.6','gpt-4o':'GPT-4o','gemini-3.6-flash':'3.6 Flash','gemini-3.8-flash':'3.8 Flash',
   'nvidia/nemotron-3-super-120b-a12b':'Nemotron 3 Super','openai/gpt-oss-120b':'GPT-OSS 120B','meta/llama-3.3-70b-instruct':'Llama 3.3 70B'};
 const nicer=v=>MODELNAME[v]||v;
 // 선택 카드 한 장
