@@ -1755,16 +1755,21 @@ class BlogPublisher:
         page.fill("input.react-autosuggest__input", q)
         page.wait_for_timeout(400)
         # 자동완성 드롭다운이 검색 버튼을 덮으면 Playwright click이 가시성 검사에서 막힌다 — DOM click으로 우회
-        page.evaluate(
-            "()=>{const b=document.querySelector('button.se-place-search-button');if(b)b.click();}"
-        )
-        page.wait_for_timeout(2800)
-        return page.evaluate(
-            r"""()=>[...document.querySelectorAll('.se-place-map-search-result-item')].map(it=>({
+        click_js = "()=>{const b=document.querySelector('button.se-place-search-button');if(b)b.click();}"
+        read_js = r"""()=>[...document.querySelectorAll('.se-place-map-search-result-item')].map(it=>({
               title:(it.querySelector('.se-place-map-search-result-title')||{}).textContent||'',
               address:(it.querySelector('.se-place-map-search-result-address')||{}).textContent||'',
             }))"""
-        )
+        page.evaluate(click_js)
+        page.wait_for_timeout(2800)
+        items = page.evaluate(read_js)
+        if not items:
+            # 세션의 첫 장소 검색은 팝업 준비가 덜 돼 0건으로 나오는 일이 잦다(실측: 같은
+            # '롯데월드몰'이 첫 검색 0건, 두 번째 검색 정상). 한 번 더 검색해 본다.
+            page.evaluate(click_js)
+            page.wait_for_timeout(2800)
+            items = page.evaluate(read_js)
+        return items
 
     @staticmethod
     def _place_query_variants(name: str, address: str | None = None) -> list[str]:
